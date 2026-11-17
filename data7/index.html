@@ -84,6 +84,21 @@
     background: transparent; color: var(--bila); cursor: pointer; }
   .uroven button.aktivni { background: var(--zluta); color: var(--text); }
   body:not(.tezsi) .jen-tezsi { display: none; }
+  .uloha { background: var(--bila); border-radius: 14px; padding: 14px 18px; margin-bottom: 22px; }
+  .uloha h3 { margin: 0 0 10px; color: var(--navy); font-size: 26px; }
+  .dve-strom { display: grid; grid-template-columns: minmax(260px, 1fr) 1.5fr; gap: 20px; align-items: start; }
+  .uloha .bazen { flex-direction: column; align-items: flex-start; margin: 0; }
+  .karta.slozka-karta { font-family: Calibri, "Segoe UI", Arial, sans-serif; }
+  .strom-pole { display: flex; flex-direction: column; gap: 8px; }
+  .slot { display: flex; align-items: flex-start; }
+  .slot .vetev { font-family: Consolas, monospace; color: var(--navy); white-space: pre; font-size: 22px; padding-top: 10px; }
+  .slot .misto { min-width: 300px; min-height: 48px; border: 3px dashed #a99cc4; border-radius: 10px; padding: 8px 12px;
+    background: var(--seda); cursor: pointer; font-weight: bold; color: #8a80a0; }
+  .slot .misto.plne { border-style: solid; border-color: var(--navy); background: var(--zluta); color: var(--text); }
+  .slot .misto.cil { outline: 4px solid var(--zluta); }
+  .slot .misto.dobre { background: var(--okbg); border-color: var(--ok); }
+  .slot .misto.spatne { background: var(--chybabg); border-color: var(--chyba); }
+  .slot .misto small { display: block; font-weight: normal; font-size: 18px; margin-top: 4px; }
   @media (max-width: 900px) { .skupiny { grid-template-columns: repeat(2, 1fr) !important; } .slozky4 { grid-template-columns: repeat(2, 1fr); }
     .dve { grid-template-columns: 1fr; } .strom { position: static; } body { font-size: 19px; } }
 </style>
@@ -94,11 +109,12 @@
 </header>
 <nav>
   <button data-k="c1" class="aktivni">1 Najdi soubor</button>
-  <button data-k="c2">2 Cesta k souboru</button>
-  <button data-k="c3">3 Plocha Kláry</button>
-  <button data-k="c4">4 Přípony</button>
-  <button data-k="c5">5 Lokálně × cloud</button>
-  <button data-k="c6">6 HW a SW</button>
+  <button data-k="cs">2 Strom složek</button>
+  <button data-k="c2">3 Cesta k souboru</button>
+  <button data-k="c3">4 Plocha Kláry</button>
+  <button data-k="c4">5 Přípony</button>
+  <button data-k="c5">6 Lokálně × cloud</button>
+  <button data-k="c6">7 HW a SW</button>
 </nav>
 <main>
   <section id="c1" class="aktivni">
@@ -115,8 +131,15 @@
     <div class="vysledky4" hidden></div>
   </section>
 
+  <section id="cs">
+    <h2>2 Strom složek</h2>
+    <p class="zadani">Uspořádej složky podle jejich názvů do přehledného stromu. Klikni na složku a pak na prázdné místo ve stromu
+      (nebo ji tam přetáhni). Kliknutím na složku ve stromu ji vrátíš zpátky.</p>
+    <div class="ulohy-strom"></div>
+  </section>
+
   <section id="c2">
-    <h2>2 Cesta k souboru</h2>
+    <h2>3 Cesta k souboru</h2>
     <p class="zadani">Podívej se na strom Klářiných složek. Ke každé otázce vyber jednu odpověď.</p>
     <div class="dve">
 <div class="strom">C:
@@ -141,7 +164,7 @@
   </section>
 
   <section id="c3">
-    <h2>3 Plocha Kláry</h2>
+    <h2>4 Plocha Kláry</h2>
     <p class="zadani">Klára má na ploše 20 rozházených souborů. Ukliď je.</p>
     <a class="stahni" href="plocha-klary.zip" download>⬇ Stáhnout Plochu Kláry (zip)</a>
     <div class="karta-uk">
@@ -167,7 +190,7 @@
   </section>
 
   <section id="c4">
-    <h2>4 Přípony</h2>
+    <h2>5 Přípony</h2>
     <p class="zadani">Každý soubor přetáhni k tomu, co doopravdy je. (Nebo klikni na soubor a pak na skupinu.)
       <span class="jen-tezsi">Pozor, jedna karta je past.</span></p>
     <div class="bazen" data-skupina=""></div>
@@ -177,7 +200,7 @@
   </section>
 
   <section id="c5">
-    <h2>5 Lokálně × cloud</h2>
+    <h2>6 Lokálně × cloud</h2>
     <p class="zadani">Je to pravda, nebo lež?</p>
     <div class="seznam"></div>
     <div class="tlacitka"><button class="vedlejsi znovu">Začít znovu</button></div>
@@ -186,7 +209,7 @@
   </section>
 
   <section id="c6">
-    <h2>6 HW a SW</h2>
+    <h2>7 HW a SW</h2>
     <p class="zadani">Hardware (HW) = věci, na které si sáhneš. Software (SW) = programy. Roztřiď karty.
       <span class="jen-tezsi">U hardwaru rozliš, jestli do počítače něco posílá (vstup), něco z něj dostává (výstup), nebo je uvnitř. Jedna karta patří na dvě místa.</span></p>
     <div class="bazen" data-skupina=""></div>
@@ -206,39 +229,41 @@ const T = () => UROVEN === "tezsi";
 const CVICENI = {
   c4: {
     zakladni: {
-      skupiny: ["📄 Dokumenty a text", "🖼️ Obrázky", "🎬 Zvuk a video"],
+      skupiny: ["📄 Dokumenty", "🖼️ Obrázky", "🎵 Zvuk", "🎬 Video"],
       karty: [
-        ["dopis.docx", "📄 Dokumenty a text", "Dokument pro Word."],
-        ["navod.pdf", "📄 Dokumenty a text", "PDF – dokument, který vypadá všude stejně."],
-        ["poznamky.txt", "📄 Dokumenty a text", "Čistý text bez formátování."],
-        ["vylet.jpg", "🖼️ Obrázky", "Fotka."],
-        ["logo.png", "🖼️ Obrázky", "Obrázek."],
-        ["kresba.bmp", "🖼️ Obrázky", "Obrázek (bitmapa)."],
-        ["pisnicka.mp3", "🎬 Zvuk a video", "Zvuk."],
-        ["film.mp4", "🎬 Zvuk a video", "Video."],
-        ["nahravka.wav", "🎬 Zvuk a video", "Zvuk."]
+        ["dopis.docx", "📄 Dokumenty", ".docx – dokument pro Word."],
+        ["navod.pdf", "📄 Dokumenty", ".pdf – dokument, který vypadá všude stejně."],
+        ["poznamky.txt", "📄 Dokumenty", ".txt – čistý text bez formátování."],
+        ["znamky.xlsx", "📄 Dokumenty", ".xlsx – tabulka pro Excel."],
+        ["vylet.jpg", "🖼️ Obrázky", ".jpg – fotka."],
+        ["logo.png", "🖼️ Obrázky", ".png – obrázek."],
+        ["pisnicka.mp3", "🎵 Zvuk", ".mp3 – zvuk, hudba."],
+        ["nahravka.wav", "🎵 Zvuk", ".wav – zvuk."],
+        ["film.mp4", "🎬 Video", ".mp4 – video."],
+        ["tanec.avi", "🎬 Video", ".avi – video."]
       ]
     },
     tezsi: {
-      sloupce: 3,
-      skupiny: ["📄 Dokumenty a text", "🖼️ Obrázky", "🎬 Zvuk a video", "📊 Tabulky", "⚙️ Programy", "🗜️ Archivy"],
+      skupiny: ["📄 Dokumenty", "🖼️ Obrázky", "🎵 Zvuk", "🎬 Video", "📦 ZIP, RAR, EXE"],
       karty: [
-        ["dopis.docx", "📄 Dokumenty a text", "Dokument pro Word."],
-        ["navod.pdf", "📄 Dokumenty a text", "PDF – dokument, který vypadá všude stejně."],
-        ["poznamky.txt", "📄 Dokumenty a text", "Čistý text bez formátování."],
-        ["referat.pptx", "📄 Dokumenty a text", "Prezentace pro PowerPoint – taky dokument."],
-        ["vylet.jpg", "🖼️ Obrázky", "Fotka."],
-        ["logo.png", "🖼️ Obrázky", "Obrázek, často s průhledným pozadím."],
-        ["smajlik.gif", "🖼️ Obrázky", "Obrázek, může se i hýbat."],
-        ["pisnicka.mp3", "🎬 Zvuk a video", "Zvuk."],
-        ["film.mp4", "🎬 Zvuk a video", "Video."],
-        ["tanec.avi", "🎬 Zvuk a video", "Video."],
-        ["znamky.xlsx", "📊 Tabulky", "Tabulka pro Excel."],
-        ["teploty.csv", "📊 Tabulky", "Tabulka zapsaná jako text, otevře ji Excel."],
-        ["hra.exe", "⚙️ Programy", "Spustitelný program."],
-        ["fotka.jpg.exe", "⚙️ Programy", "Past! Rozhoduje poslední přípona – je to program."],
-        ["fotky.zip", "🗜️ Archivy", "Zabalené (komprimované) soubory."],
-        ["projekt.rar", "🗜️ Archivy", "Zabalené (komprimované) soubory."]
+        ["dopis.docx", "📄 Dokumenty", ".docx – dokument pro Word."],
+        ["navod.pdf", "📄 Dokumenty", ".pdf – dokument, který vypadá všude stejně."],
+        ["poznamky.txt", "📄 Dokumenty", ".txt – čistý text bez formátování."],
+        ["znamky.xlsx", "📄 Dokumenty", ".xlsx – tabulka pro Excel."],
+        ["referat.pptx", "📄 Dokumenty", ".pptx – prezentace pro PowerPoint."],
+        ["stranka.html", "📄 Dokumenty", ".html – webová stránka, otevře ji prohlížeč."],
+        ["vylet.jpg", "🖼️ Obrázky", ".jpg – fotka."],
+        ["logo.png", "🖼️ Obrázky", ".png – obrázek."],
+        ["smajlik.gif", "🖼️ Obrázky", ".gif – obrázek, může se i hýbat."],
+        ["pisnicka.mp3", "🎵 Zvuk", ".mp3 – zvuk, hudba."],
+        ["nahravka.wav", "🎵 Zvuk", ".wav – zvuk."],
+        ["film.mp4", "🎬 Video", ".mp4 – video."],
+        ["tanec.avi", "🎬 Video", ".avi – video."],
+        ["koncert.mpg", "🎬 Video", ".mpg – video."],
+        ["fotky.zip", "📦 ZIP, RAR, EXE", ".zip – archiv: víc souborů zabalených do jednoho. Před prací rozbalit."],
+        ["projekt.rar", "📦 ZIP, RAR, EXE", ".rar – archiv: zabalené soubory."],
+        ["hra.exe", "📦 ZIP, RAR, EXE", ".exe – program: po spuštění může v počítači cokoli změnit."],
+        ["fotka.jpg.exe", "📦 ZIP, RAR, EXE", "Past! Rozhoduje poslední přípona – je to program .exe, ne fotka."]
       ]
     }
   },
@@ -564,7 +589,114 @@ function najdiSoubor() {
   return reset;
 }
 
+// ---------- strom složek ----------
+// hloubky = kostra stromu shora dolů (0 = hlavní složka); slozky: název → [povolení rodiče (null = hlavní), vysvětlení]
+const STROMY = [
+  { nazev: "Úloha A – složky z učebnice", hloubky: [0, 1, 2, 1, 0, 0, 1, 2, 2, 1], slozky: {
+    "Fotky": [[null], "Hlavní složka na všechny fotky – patří úplně nahoru."],
+    "Fotky z dovolených": [["Fotky"], "Patří do Fotky – a sama má v sobě jednotlivé dovolené."],
+    "Mallorca 2019": [["Fotky z dovolených"], "Dovolená – patří do Fotky z dovolených."],
+    "Rodinné focení 22": [["Fotky"], "Fotky, ale ne z dovolené – patří přímo do Fotky."],
+    "Hry": [[null], "Hry nesouvisí s fotkami ani se školou – patří úplně nahoru jako hlavní složka."],
+    "Škola": [[null], "Hlavní složka na všechno do školy – patří úplně nahoru."],
+    "Vlastivěda": [["Škola"], "Předmět – patří do Škola."],
+    "Čtenářské deníky": [["Škola"], "Do školy (čtení) – patří do Škola."],
+    "Referát Karel IV.": [["Vlastivěda"], "Referát do vlastivědy – patří do Vlastivěda."],
+    "Vysoké Tatry": [["Vlastivěda", "Fotky z dovolených"], "Učivo vlastivědy – patří do Vlastivěda."]
+  }},
+  { nazev: "Úloha B – těžší strom (15 složek, tři patra)", hloubky: [0, 1, 2, 2, 1, 2, 2, 0, 1, 2, 2, 1, 0, 1, 1], slozky: {
+    "Škola": [[null], "Hlavní složka na všechno do školy – patří úplně nahoru."],
+    "Zeměpis": [["Škola"], "Předmět – patří do Škola."],
+    "Čeština": [["Škola"], "Předmět – patří do Škola."],
+    "Afrika": [["Zeměpis"], "Téma do zeměpisu – patří do Zeměpis."],
+    "Evropa": [["Zeměpis"], "Téma do zeměpisu – patří do Zeměpis."],
+    "Čtenářské deníky": [["Čeština"], "Čtení – patří do Čeština."],
+    "Slohy": [["Čeština"], "Slohové práce – patří do Čeština."],
+    "Fotky": [[null], "Hlavní složka na všechny fotky – patří úplně nahoru."],
+    "Dovolené": [["Fotky"], "Fotky z cest – patří do Fotky."],
+    "Narozeniny": [["Fotky"], "Fotky z oslavy – patří do Fotky."],
+    "Chorvatsko 2026": [["Dovolené"], "Rok v názvu prozrazuje cestu, ne učivo – patří do Dovolené."],
+    "Tatry 2025": [["Dovolené"], "Rok v názvu prozrazuje cestu, ne učivo – patří do Dovolené."],
+    "Zábava": [[null], "Hlavní složka na volný čas – patří úplně nahoru."],
+    "Hry": [["Zábava"], "Volný čas – patří do Zábava."],
+    "Hudba": [["Zábava"], "Volný čas – patří do Zábava."]
+  }}
+];
+
+function stromSlozek() {
+  const kont = document.querySelector("#cs .ulohy-strom");
+  STROMY.forEach(u => {
+    const el = document.createElement("div"); el.className = "uloha";
+    el.innerHTML = `<h3>${u.nazev}</h3><div class="dve-strom"><div class="bazen"></div><div class="strom-pole"></div></div>
+      <div class="tlacitka"><button class="hlavni zkontroluj">Zkontrolovat</button><button class="vedlejsi znovu">Začít znovu</button></div>
+      <div class="vysledek"></div>`;
+    kont.appendChild(el);
+    const bazen = el.querySelector(".bazen"), pole = el.querySelector(".strom-pole"), vys = el.querySelector(".vysledek");
+    const n = u.hloubky.length;
+    const rodic = u.hloubky.map((h, i) => { for (let j = i - 1; j >= 0; j--) if (u.hloubky[j] === h - 1) return j; return -1; });
+    let sloty, poradi, vybrana, zkontrolovano;
+
+    function poloz(i) {
+      if (vybrana) { sloty = sloty.map(x => x === vybrana ? null : x); sloty[i] = vybrana; vybrana = null; }
+      else if (sloty[i]) sloty[i] = null;
+      else return;
+      zkontrolovano = false; vys.textContent = ""; vykresli();
+    }
+    function spravne(i) {
+      const s = sloty[i]; if (!s) return false;
+      return u.slozky[s][0].includes(rodic[i] < 0 ? null : sloty[rodic[i]]);
+    }
+    function vykresli() {
+      bazen.innerHTML = "";
+      poradi.filter(s => !sloty.includes(s)).forEach(s => {
+        const k = document.createElement("div");
+        k.className = "karta slozka-karta" + (vybrana === s ? " vybrana" : "");
+        k.textContent = "📁 " + s; k.draggable = true;
+        k.addEventListener("dragstart", e => { vybrana = s; e.dataTransfer.setData("text/plain", ""); });
+        k.addEventListener("click", () => { vybrana = vybrana === s ? null : s; vykresli(); });
+        bazen.appendChild(k);
+      });
+      bazen.classList.toggle("prazdny", sloty.every(Boolean));
+      pole.innerHTML = "";
+      u.hloubky.forEach((h, i) => {
+        const r = document.createElement("div"); r.className = "slot";
+        const v = document.createElement("span"); v.className = "vetev";
+        v.textContent = h ? "    ".repeat(h - 1) + "└─ " : "";
+        const m = document.createElement("div");
+        m.className = "misto" + (sloty[i] ? " plne" : "");
+        m.textContent = sloty[i] ? "📁 " + sloty[i] : "sem patří složka";
+        if (zkontrolovano && sloty[i]) {
+          const ok = spravne(i);
+          m.classList.add(ok ? "dobre" : "spatne");
+          if (!ok) {
+            const sm = document.createElement("small");
+            sm.textContent = u.slozky[sloty[i]][1];
+            m.appendChild(sm);
+          }
+        }
+        m.addEventListener("click", () => poloz(i));
+        m.addEventListener("dragover", e => { e.preventDefault(); m.classList.add("cil"); });
+        m.addEventListener("dragleave", () => m.classList.remove("cil"));
+        m.addEventListener("drop", e => { e.preventDefault(); poloz(i); });
+        r.append(v, m); pole.appendChild(r);
+      });
+    }
+    function reset() {
+      sloty = Array(n).fill(null); poradi = zamichej(Object.keys(u.slozky)); vybrana = null; zkontrolovano = false;
+      vys.textContent = ""; vykresli();
+    }
+    el.querySelector(".zkontroluj").addEventListener("click", () => {
+      zkontrolovano = true; vykresli();
+      const dobre = u.hloubky.filter((_, i) => spravne(i)).length, zbyva = sloty.filter(x => !x).length;
+      vys.textContent = `Správně ${dobre} z ${n}.` + (zbyva ? ` Ještě ti zbývá ${zbyva}.` : dobre === n ? " Výborně!" : " Červené složky přesuň jinam.");
+    });
+    el.querySelector(".znovu").addEventListener("click", reset);
+    reset();
+  });
+}
+
 // ---------- spuštění a přepínání úrovně ----------
+stromSlozek();
 const ZNOVU = [najdiSoubor(), vyber(), trideni("c4"), pravdaLez(), trideni("c6")];
 document.querySelectorAll(".uroven button").forEach(b => b.addEventListener("click", () => {
   UROVEN = b.dataset.u;
