@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Filip Cihlář">
+<title>Data, složky a cloud</title>
+<style>
+  :root {
+    --navy: #3b2370; --zluta: #f2a900; --seda: #f0eef5; --text: #1a1a1a;
+    --ok: #2e7d32; --okbg: #e3f2e5; --chyba: #c62828; --chybabg: #fdecea; --bila: #fff;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font-family: Calibri, "Segoe UI", Arial, sans-serif; background: var(--seda); color: var(--text); font-size: 22px; }
+  header { background: var(--navy); color: var(--bila); padding: 18px 24px; border-bottom: 6px solid var(--zluta); }
+  header h1 { margin: 0; font-size: 34px; }
+  nav { display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 24px 0; }
+  nav button { font: inherit; font-weight: bold; border: 3px solid var(--navy); background: var(--bila); color: var(--navy);
+    padding: 10px 18px; border-radius: 12px; cursor: pointer; }
+  nav button.aktivni { background: var(--navy); color: var(--bila); }
+  main { padding: 16px 24px 40px; max-width: 1240px; margin: 0 auto; }
+  section { display: none; } section.aktivni { display: block; }
+  h2 { color: var(--navy); margin: 8px 0 4px; font-size: 30px; }
+  .zadani { margin: 0 0 14px; }
+  .bazen { min-height: 80px; background: var(--bila); border: 3px dashed #a99cc4; border-radius: 14px; padding: 12px;
+    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .bazen.prazdny::after { content: "Hotovo – všechno je rozdělené. Klikni na Zkontrolovat."; color: #667; }
+  .skupiny { display: grid; gap: 12px; }
+  .skupina { background: var(--bila); border-radius: 14px; border: 3px solid var(--navy); min-height: 150px; display: flex; flex-direction: column; }
+  .skupina h3 { margin: 0; padding: 10px; text-align: center; background: var(--navy); color: var(--bila); border-radius: 10px 10px 0 0; font-size: 22px; }
+  .skupina .obsah { padding: 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .skupina.cil { outline: 4px solid var(--zluta); }
+  .karta { background: var(--zluta); color: var(--text); border-radius: 10px; padding: 8px 12px; cursor: grab; user-select: none;
+    font-weight: bold; border: 3px solid transparent; font-family: Consolas, monospace; font-size: 21px; }
+  .karta.vybrana { border-color: var(--navy); box-shadow: 0 0 0 3px var(--bila) inset; }
+  .karta.dobre { background: var(--okbg); border-color: var(--ok); }
+  .karta.spatne { background: var(--chybabg); border-color: var(--chyba); }
+  .karta small { display: block; font-weight: normal; font-size: 18px; margin-top: 4px; font-family: Calibri, "Segoe UI", Arial, sans-serif; }
+  .tlacitka { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .tlacitka button, .pl button { font: inherit; font-weight: bold; padding: 10px 22px; border-radius: 12px; border: none; cursor: pointer; }
+  .hlavni { background: var(--navy); color: var(--bila); }
+  .vedlejsi { background: var(--bila); color: var(--navy); border: 3px solid var(--navy) !important; }
+  .vysledek { font-size: 26px; font-weight: bold; color: var(--navy); min-height: 34px; }
+  .tvrzeni { background: var(--bila); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; border-left: 10px solid var(--navy); }
+  .tvrzeni.dobre { border-left-color: var(--ok); background: var(--okbg); }
+  .tvrzeni.spatne { border-left-color: var(--chyba); background: var(--chybabg); }
+  .tvrzeni p { margin: 0 0 10px; font-weight: bold; }
+  .pl { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .pl button { background: var(--seda); color: var(--navy); border: 3px solid var(--navy); text-align: left; }
+  .pl button.cesta { font-family: Consolas, monospace; font-size: 19px; }
+  .pl button:disabled { cursor: default; opacity: .6; }
+  .pl button.oznacena { opacity: 1; background: var(--navy); color: var(--bila); }
+  .pl .proc { flex-basis: 100%; font-size: 20px; margin-top: 6px; }
+  .zaver { background: var(--zluta); border-radius: 14px; padding: 14px 18px; margin-top: 20px; }
+  .zaver b { font-size: 26px; }
+  .dve { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 20px; align-items: start; }
+  .strom { background: var(--bila); border-radius: 14px; padding: 14px 18px; font-family: Consolas, monospace; font-size: 19px;
+    line-height: 1.5; white-space: pre; position: sticky; top: 10px; overflow-x: auto; }
+  .hledej { font-size: 30px; font-weight: bold; color: var(--navy); margin: 6px 0 12px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  .hledej .cil4 { background: var(--zluta); color: var(--text); padding: 6px 16px; border-radius: 10px; font-family: Consolas, monospace; }
+  .hledej .cas { font-variant-numeric: tabular-nums; }
+  .plocha { position: relative; height: 640px; background: #3b6b8f; border-radius: 14px; overflow: hidden; }
+  .plocha .s4 { position: absolute; white-space: nowrap; }
+  .slozky4 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .slozky4 .sl { background: var(--bila); border: 3px solid var(--navy); border-radius: 12px; min-width: 0; }
+  .slozky4 .sl h3 { margin: 0; padding: 8px; background: var(--navy); color: var(--bila); border-radius: 8px 8px 0 0; font-size: 20px; text-align: center; }
+  .slozky4 .sl .obsah4 { padding: 6px; display: flex; flex-direction: column; gap: 5px; }
+  .s4 { background: var(--bila); border: 2px solid #9aa7b8; border-radius: 8px; padding: 3px 7px; cursor: pointer; font-size: 16px; user-select: none;
+    font-family: Consolas, monospace; overflow: hidden; text-overflow: ellipsis; }
+  .slozky4 .s4 { border-color: #d0d7e0; }
+  .s4.trefa { background: var(--okbg); border-color: var(--ok); }
+  .s4.vedle { background: var(--chybabg); border-color: var(--chyba); }
+  .start4 { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 0 16px; }
+  .start4 button { font: inherit; font-weight: bold; padding: 14px 24px; border-radius: 12px; border: none; cursor: pointer; }
+  .vysledky4 { background: var(--bila); border-radius: 14px; padding: 14px 18px; margin-top: 16px; font-size: 24px; }
+  .karta-uk { background: var(--bila); border-radius: 14px; padding: 16px 20px; margin-bottom: 16px; }
+  .karta-uk ol { margin: 6px 0 0; padding-left: 30px; } .karta-uk li { margin: 6px 0; }
+  .stahni { display: inline-block; background: var(--navy); color: var(--bila); text-decoration: none; font-weight: bold;
+    padding: 14px 26px; border-radius: 12px; font-size: 26px; margin: 4px 0 16px; }
+  header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .uroven { display: flex; gap: 8px; align-items: center; font-weight: bold; }
+  .uroven button { font: inherit; font-weight: bold; padding: 8px 16px; border-radius: 10px; border: 3px solid var(--zluta);
+    background: transparent; color: var(--bila); cursor: pointer; }
+  .uroven button.aktivni { background: var(--zluta); color: var(--text); }
+  body:not(.tezsi) .jen-tezsi { display: none; }
+  @media (max-width: 900px) { .skupiny { grid-template-columns: repeat(2, 1fr) !important; } .slozky4 { grid-template-columns: repeat(2, 1fr); }
+    .dve { grid-template-columns: 1fr; } .strom { position: static; } body { font-size: 19px; } }
+</style>
+</head>
+<body>
+<header><h1>Data, složky a cloud</h1>
+  <div class="uroven">Úroveň: <button data-u="zakladni" class="aktivni">Základní</button><button data-u="tezsi">Těžší</button></div>
+</header>
+<nav>
+  <button data-k="c1" class="aktivni">1 Najdi soubor</button>
+  <button data-k="c2">2 Cesta k souboru</button>
+  <button data-k="c3">3 Plocha Kláry</button>
+  <button data-k="c4">4 Přípony</button>
+  <button data-k="c5">5 Lokálně × cloud</button>
+  <button data-k="c6">6 HW a SW</button>
+</nav>
+<main>
+  <section id="c1" class="aktivni">
+    <h2>1 Najdi soubor</h2>
+    <p class="zadani">Stránka ti napíše, který soubor máš najít. Najdi ho a klikni na něj. Hledáš tři soubory, stopky běží.
+      Pak to samé zkusíš na druhé ploše. Kde najdeš soubory rychleji?
+      <span class="jen-tezsi"><b>Těžší:</b> nedostaneš název souboru, jen popis, co v něm je.</span></p>
+    <div class="start4">
+      <button class="hlavni" data-v="poradek">Začít: POŘÁDEK (složky)</button>
+      <button class="vedlejsi" data-v="chaos">Začít: CHAOS (rozházená plocha)</button>
+    </div>
+    <div class="hledej" hidden><span>Najdi: <span class="cil4"></span></span><span class="cas">0,0 s</span><span class="kolik"></span></div>
+    <div class="hraci"></div>
+    <div class="vysledky4" hidden></div>
+  </section>
+
+  <section id="c2">
+    <h2>2 Cesta k souboru</h2>
+    <p class="zadani">Podívej se na strom Klářiných složek. Ke každé otázce vyber jednu odpověď.</p>
+    <div class="dve">
+<div class="strom">C:
+└─ Uživatelé
+   └─ Klára
+      ├─ Dokumenty
+      │  ├─ Škola
+      │  │  ├─ Zeměpis
+      │  │  │  ├─ Afrika.docx
+      │  │  │  └─ mapa.png
+      │  │  └─ Čeština
+      │  │     └─ Babička.docx
+      │  └─ Osobní
+      │     └─ kapesné.xlsx
+      ├─ Obrázky
+      │  └─ Chorvatsko 2026
+      │     └─ moře.jpg
+      └─ Hudba
+         └─ písnička.mp3</div>
+      <div><div class="seznam"></div><div class="tlacitka"><button class="vedlejsi znovu">Začít znovu</button></div><div class="vysledek"></div></div>
+    </div>
+  </section>
+
+  <section id="c3">
+    <h2>3 Plocha Kláry</h2>
+    <p class="zadani">Klára má na ploše 20 rozházených souborů. Ukliď je.</p>
+    <a class="stahni" href="plocha-klary.zip" download>⬇ Stáhnout Plochu Kláry (zip)</a>
+    <div class="karta-uk">
+      <b>Postup</b>
+      <ol>
+        <li>Stažený soubor rozbal (pravé tlačítko → Extrahovat vše).</li>
+        <li>Navrhni složky – nejvýš 2 patra.</li>
+        <li>Roztřiď 20 souborů. Nevíš, co v souboru je? Otevři ho. Co je navíc, smaž.</li>
+        <li>Pět souborů přejmenuj podle pravidel: co to je + kdy (datum jako RRRR-MM-DD).</li>
+        <li>Soused najde do 10 sekund referát o řekách Afriky?</li>
+      </ol>
+      <p class="jen-tezsi"><b>Těžší:</b> přejmenuj všech 17 souborů, které zůstanou, ne jen pět. Pak napiš do souboru
+        <code>cesty.txt</code> cestu ke třem souborům: referát o řekách Afriky, fotka z narozenin a tabulka kapesného.</p>
+    </div>
+    <div class="karta-uk">
+      <b>Kontrola</b>
+      <ol>
+        <li>Na ploše nezůstal žádný soubor mimo složky.</li>
+        <li>Žádná složka se nejmenuje „Nová složka“ ani „Různé“.</li>
+        <li>Ze 20 souborů 3 nepatří nikam. Našel/našla jsi všechny?</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="c4">
+    <h2>4 Přípony</h2>
+    <p class="zadani">Každý soubor přetáhni k tomu, co doopravdy je. (Nebo klikni na soubor a pak na skupinu.)
+      <span class="jen-tezsi">Pozor, jedna karta je past.</span></p>
+    <div class="bazen" data-skupina=""></div>
+    <div class="skupiny"></div>
+    <div class="tlacitka"><button class="hlavni zkontroluj">Zkontrolovat</button><button class="vedlejsi znovu">Začít znovu</button></div>
+    <div class="vysledek"></div>
+  </section>
+
+  <section id="c5">
+    <h2>5 Lokálně × cloud</h2>
+    <p class="zadani">Je to pravda, nebo lež?</p>
+    <div class="seznam"></div>
+    <div class="tlacitka"><button class="vedlejsi znovu">Začít znovu</button></div>
+    <div class="vysledek"></div>
+    <div class="zaver" hidden><b>Co nechci ztratit, mám na dvou místech. Jedno z nich není můj počítač.</b></div>
+  </section>
+
+  <section id="c6">
+    <h2>6 HW a SW</h2>
+    <p class="zadani">Hardware (HW) = věci, na které si sáhneš. Software (SW) = programy. Roztřiď karty.
+      <span class="jen-tezsi">U hardwaru rozliš, jestli do počítače něco posílá (vstup), něco z něj dostává (výstup), nebo je uvnitř. Jedna karta patří na dvě místa.</span></p>
+    <div class="bazen" data-skupina=""></div>
+    <div class="skupiny"></div>
+    <div class="tlacitka"><button class="hlavni zkontroluj">Zkontrolovat</button><button class="vedlejsi znovu">Začít znovu</button></div>
+    <div class="vysledek"></div>
+  </section>
+</main>
+
+<script>
+// ---------- úroveň ----------
+let UROVEN = "zakladni";
+const T = () => UROVEN === "tezsi";
+
+// ---------- data ----------
+// karty: [text, správná skupina nebo seznam skupin, vysvětlení]
+const CVICENI = {
+  c4: {
+    zakladni: {
+      skupiny: ["📄 Dokumenty a text", "🖼️ Obrázky", "🎬 Zvuk a video"],
+      karty: [
+        ["dopis.docx", "📄 Dokumenty a text", "Dokument pro Word."],
+        ["navod.pdf", "📄 Dokumenty a text", "PDF – dokument, který vypadá všude stejně."],
+        ["poznamky.txt", "📄 Dokumenty a text", "Čistý text bez formátování."],
+        ["vylet.jpg", "🖼️ Obrázky", "Fotka."],
+        ["logo.png", "🖼️ Obrázky", "Obrázek."],
+        ["kresba.bmp", "🖼️ Obrázky", "Obrázek (bitmapa)."],
+        ["pisnicka.mp3", "🎬 Zvuk a video", "Zvuk."],
+        ["film.mp4", "🎬 Zvuk a video", "Video."],
+        ["nahravka.wav", "🎬 Zvuk a video", "Zvuk."]
+      ]
+    },
+    tezsi: {
+      sloupce: 3,
+      skupiny: ["📄 Dokumenty a text", "🖼️ Obrázky", "🎬 Zvuk a video", "📊 Tabulky", "⚙️ Programy", "🗜️ Archivy"],
+      karty: [
+        ["dopis.docx", "📄 Dokumenty a text", "Dokument pro Word."],
+        ["navod.pdf", "📄 Dokumenty a text", "PDF – dokument, který vypadá všude stejně."],
+        ["poznamky.txt", "📄 Dokumenty a text", "Čistý text bez formátování."],
+        ["referat.pptx", "📄 Dokumenty a text", "Prezentace pro PowerPoint – taky dokument."],
+        ["vylet.jpg", "🖼️ Obrázky", "Fotka."],
+        ["logo.png", "🖼️ Obrázky", "Obrázek, často s průhledným pozadím."],
+        ["smajlik.gif", "🖼️ Obrázky", "Obrázek, může se i hýbat."],
+        ["pisnicka.mp3", "🎬 Zvuk a video", "Zvuk."],
+        ["film.mp4", "🎬 Zvuk a video", "Video."],
+        ["tanec.avi", "🎬 Zvuk a video", "Video."],
+        ["znamky.xlsx", "📊 Tabulky", "Tabulka pro Excel."],
+        ["teploty.csv", "📊 Tabulky", "Tabulka zapsaná jako text, otevře ji Excel."],
+        ["hra.exe", "⚙️ Programy", "Spustitelný program."],
+        ["fotka.jpg.exe", "⚙️ Programy", "Past! Rozhoduje poslední přípona – je to program."],
+        ["fotky.zip", "🗜️ Archivy", "Zabalené (komprimované) soubory."],
+        ["projekt.rar", "🗜️ Archivy", "Zabalené (komprimované) soubory."]
+      ]
+    }
+  },
+  c6: {
+    zakladni: {
+      skupiny: ["🔧 Hardware (HW)", "💿 Software (SW)"],
+      karty: [
+        ["myš", "🔧 Hardware (HW)", "Myš si vezmeš do ruky – hardware."],
+        ["klávesnice", "🔧 Hardware (HW)", "Klávesnice je věc – hardware."],
+        ["monitor", "🔧 Hardware (HW)", "Monitor je věc – hardware."],
+        ["tiskárna", "🔧 Hardware (HW)", "Tiskárna je věc – hardware."],
+        ["procesor", "🔧 Hardware (HW)", "Procesor je součástka uvnitř počítače – hardware."],
+        ["pevný disk", "🔧 Hardware (HW)", "Disk je součástka, na kterou se ukládají data – hardware."],
+        ["Windows", "💿 Software (SW)", "Operační systém je program – software."],
+        ["Word", "💿 Software (SW)", "Textový editor je program – software."],
+        ["webový prohlížeč", "💿 Software (SW)", "Prohlížeč je program – software."],
+        ["Minecraft", "💿 Software (SW)", "Hra je program – software."],
+        ["antivirus", "💿 Software (SW)", "Antivirus je program – software."],
+        ["kalkulačka v počítači", "💿 Software (SW)", "Kalkulačka v počítači je program – software."]
+      ]
+    },
+    tezsi: {
+      skupiny: ["⌨️ HW – vstup", "🖥️ HW – výstup", "🧠 HW – uvnitř", "💿 Software (SW)"],
+      karty: [
+        ["myš", "⌨️ HW – vstup", "Myší posíláš do počítače pohyb a kliknutí – vstup."],
+        ["klávesnice", "⌨️ HW – vstup", "Klávesnicí posíláš do počítače text – vstup."],
+        ["mikrofon", "⌨️ HW – vstup", "Mikrofon posílá do počítače zvuk – vstup."],
+        ["webkamera", "⌨️ HW – vstup", "Kamera posílá do počítače obraz – vstup."],
+        ["monitor", "🖥️ HW – výstup", "Monitor ukazuje, co počítač vytvořil – výstup."],
+        ["tiskárna", "🖥️ HW – výstup", "Tiskárna dostává z počítače dokument – výstup."],
+        ["reproduktory", "🖥️ HW – výstup", "Reproduktory dostávají z počítače zvuk – výstup."],
+        ["dotyková obrazovka", ["⌨️ HW – vstup", "🖥️ HW – výstup"], "Je obojí: obraz ukazuje (výstup) a dotyk snímá (vstup)."],
+        ["procesor", "🧠 HW – uvnitř", "Procesor počítá – je uvnitř počítače."],
+        ["operační paměť (RAM)", "🧠 HW – uvnitř", "RAM si pamatuje, s čím počítač právě pracuje – po vypnutí se vymaže."],
+        ["SSD disk", "🧠 HW – uvnitř", "Disk uchovává data i po vypnutí."],
+        ["základní deska", "🧠 HW – uvnitř", "Propojuje všechny součástky."],
+        ["Windows", "💿 Software (SW)", "Operační systém – program, který řídí celý počítač."],
+        ["Android", "💿 Software (SW)", "Operační systém v mobilu – software."],
+        ["Word", "💿 Software (SW)", "Aplikace – software."],
+        ["ovladač tiskárny", "💿 Software (SW)", "Past! Ovladač je program, i když patří k tiskárně."]
+      ]
+    }
+  }
+};
+
+// otázky: [otázka, možnosti, index správné, vysvětlení, je cesta, jen těžší]
+const OTAZKY = [
+  ["Jaká je cesta k souboru Afrika.docx?",
+   ["C:\\Uživatelé\\Klára\\Dokumenty\\Škola\\Zeměpis\\Afrika.docx", "C:\\Uživatelé\\Klára\\Škola\\Zeměpis\\Afrika.docx",
+    "C:\\Zeměpis\\Afrika.docx", "C:\\Uživatelé\\Klára\\Dokumenty\\Zeměpis\\Škola\\Afrika.docx"], 0,
+   "Jdi od C: po větvích dolů a nic nevynechej.", true, false],
+  ["Ve které složce leží soubor kapesné.xlsx?", ["Osobní", "Dokumenty", "Škola", "Klára"], 0,
+   "Soubor leží v té složce, která je přímo nad ním.", false, false],
+  ["Ve které složce je soubor moře.jpg?", ["Chorvatsko 2026", "Obrázky", "Hudba", "Dokumenty"], 0,
+   "Přímo nad souborem je složka Chorvatsko 2026. Ta je ve složce Obrázky.", false, false],
+  ["Které dva soubory leží ve stejné složce?", ["Afrika.docx a mapa.png", "Afrika.docx a Babička.docx", "moře.jpg a písnička.mp3", "kapesné.xlsx a Babička.docx"], 0,
+   "Oba leží ve složce Zeměpis.", false, false],
+  ["Kolik složek je mezi C: a souborem Babička.docx?", ["5", "3", "4", "6"], 0,
+   "Uživatelé, Klára, Dokumenty, Škola, Čeština – pět složek.", false, true],
+  ["Klára přesune složku Škola do složky Osobní. Jaká bude nová cesta k Afrika.docx?",
+   ["C:\\Uživatelé\\Klára\\Dokumenty\\Osobní\\Škola\\Zeměpis\\Afrika.docx", "C:\\Uživatelé\\Klára\\Dokumenty\\Škola\\Osobní\\Zeměpis\\Afrika.docx",
+    "C:\\Uživatelé\\Klára\\Dokumenty\\Osobní\\Zeměpis\\Afrika.docx", "Cesta se nezmění."], 0,
+   "Celá složka Škola i se vším uvnitř je teď o patro níž – ve složce Osobní.", true, true],
+  ["Klára smaže složku Škola. Co zmizí?", ["Afrika.docx, mapa.png i Babička.docx", "Jen složka, soubory zůstanou", "Jen Afrika.docx", "Nic, složka se nedá smazat"], 0,
+   "Se složkou zmizí všechno, co je v ní – i v podsložkách.", false, true],
+  ["Klára je ve složce Zeměpis a jde o patro výš. Kde je?", ["Škola", "Dokumenty", "Čeština", "Afrika.docx"], 0,
+   "O patro výš = do složky, ve které Zeměpis leží.", false, true],
+  ["Může mít Klára ve složce Zeměpis dva soubory se stejným názvem Afrika.docx?", ["Ne", "Ano", "Ano, když mají jiný obsah", "Ano, ale jen dva"], 0,
+   "Ve stejné složce musí mít každý soubor jiný název. V jiné složce stejný název být může.", false, true]
+];
+
+// tvrzení: [text, pravda?, vysvětlení, jen těžší]
+const TVRZENI = [
+  ["Soubor uložený na ploše školního počítače otevřu doma.", false, "Leží jen v tom jednom počítači ve škole.", false],
+  ["Soubor uložený jen v cloudu otevřu i bez internetu.", false, "Do cloudu vede cesta přes internet.", false],
+  ["Cloud je počítač (server) někde jinde, o který se stará firma.", true, "Moje soubory leží v cizím počítači.", false],
+  ["Flashka je lokální úložiště.", true, "Data jsou přímo u mě, ve flashce. Ztratím ji – ztratím data.", false],
+  ["Sdílím soubor jen ke čtení. Spolužák v něm nemůže nic změnit.", true, "Může si ale stáhnout vlastní kopii a měnit tu.", false],
+  ["Po 9. třídě mi může školní účet zaniknout i se soubory.", true, "Co chci mít, si musím včas stáhnout nebo přesunout.", false],
+  ["Smažu fotku v synchronizované složce v mobilu. V cloudu zůstane.", false, "Synchronizace ji smaže všude. Chvíli bývá v koši, pak je pryč.", true],
+  ["Synchronizace je totéž co záloha.", false, "Záloha je kopie, které se smazání originálu nedotkne.", true],
+  ["Odkaz „kdokoli s odkazem“ uvidí jen ten, komu ho pošlu.", false, "Odkaz se dá přeposlat dál.", true],
+  ["Editor může v sdíleném souboru měnit text.", true, "Proto právo upravovat dávám jen tomu, komu věřím.", true],
+  ["Na čem mi záleží, stačí mít jen v cloudu. Tam se nic neztratí.", false, "I v cloudu se dá soubor smazat nebo zapomenout heslo. Mám ho na dvou místech.", true]
+];
+
+// najdi soubor: první 4 soubory ve složce = základní úroveň
+const SLOZKY4 = {
+  "Zeměpis": ["Afrika-podnebi.docx", "Afrika-reky.docx", "mapa-Evropy.png", "Asie-test.pdf", "hory-sveta.pptx", "pocasi.xlsx", "Nil.jpg", "kontinenty.txt"],
+  "Čeština": ["Babicka-denik.docx", "popis-osoby.docx", "slovesa.docx", "basnicka.txt", "diktat-oprava.pdf", "vyjmenovana-slova.pptx", "Kytice.pdf", "dopis.docx"],
+  "Fyzika": ["mereni-delky.xlsx", "planety.pptx", "teplomer.jpg", "hustota.xlsx", "sila-pokus.docx", "jednotky.pdf", "gravitace.mp4", "magnety.png"],
+  "Fotky": ["Chorvatsko-more.jpg", "Chorvatsko-plaz.jpg", "dort.jpg", "pes-Max.jpg", "tabor-2026.mp4", "lyzak.jpg", "vanoce.jpg", "babicka-deda.png"],
+  "Hudba": ["oblibena.mp3", "buben.mp3", "koncert.mp4", "playlist.txt", "akordy.pdf", "noty.pdf", "zpevnik.docx", "fletna.mp3"],
+  "Hry": ["Minecraft-svet.zip", "sachy.txt", "pozice.sav", "skore.xlsx", "level-mapa.png", "navod-hra.pdf", "instalace.exe", "screen-hra.png"]
+};
+// [název, popis pro těžší úroveň]
+const HLEDANE = [
+  [["Afrika-reky.docx", "referát o řekách Afriky"], ["pes-Max.jpg", "fotka psa"], ["skore.xlsx", "tabulka s výsledky ze hry"]],
+  [["planety.pptx", "prezentace o sluneční soustavě"], ["popis-osoby.docx", "sloh o člověku"], ["buben.mp3", "nahrávka bubnu"]]
+];
+
+// ---------- přepínání cvičení ----------
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button, section").forEach(x => x.classList.remove("aktivni"));
+  b.classList.add("aktivni");
+  document.getElementById(b.dataset.k).classList.add("aktivni");
+}));
+
+function zamichej(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ---------- třídění do skupin ----------
+function trideni(id) {
+  const sek = document.getElementById(id);
+  const bazen = sek.querySelector(".bazen"), skup = sek.querySelector(".skupiny"), vys = sek.querySelector(".vysledek");
+  let vybrana = null, cv = null;
+
+  function cil(el) { return el.classList.contains("bazen") ? el : el.querySelector(".obsah"); }
+  function aktualizuj() { bazen.classList.toggle("prazdny", !bazen.querySelector(".karta")); }
+  function presun(karta, misto) {
+    karta.classList.remove("dobre", "spatne", "vybrana");
+    const sm = karta.querySelector("small"); if (sm) sm.remove();
+    cil(misto).appendChild(karta); vybrana = null; vys.textContent = ""; aktualizuj();
+  }
+  function pripravSkupiny() {
+    skup.style.gridTemplateColumns = `repeat(${cv.sloupce || cv.skupiny.length}, 1fr)`;
+    skup.innerHTML = "";
+    cv.skupiny.forEach(s => {
+      const el = document.createElement("div");
+      el.className = "skupina"; el.dataset.skupina = s;
+      el.innerHTML = `<h3>${s}</h3><div class="obsah"></div>`;
+      el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("cil"); });
+      el.addEventListener("dragleave", () => el.classList.remove("cil"));
+      el.addEventListener("drop", e => { e.preventDefault(); el.classList.remove("cil"); if (vybrana) presun(vybrana, el); });
+      el.addEventListener("click", () => { if (vybrana) presun(vybrana, el); });
+      skup.appendChild(el);
+    });
+  }
+  function rozdej() {
+    cv = CVICENI[id][UROVEN]; vybrana = null;
+    pripravSkupiny();
+    bazen.innerHTML = ""; vys.textContent = "";
+    zamichej(cv.karty).forEach(k => {
+      const el = document.createElement("div");
+      el.className = "karta"; el.draggable = true; el.textContent = k[0];
+      el.dataset.ok = [].concat(k[1]).join("|"); el.dataset.proc = k[2];
+      el.addEventListener("dragstart", e => { vybrana = el; e.dataTransfer.setData("text/plain", ""); });
+      el.addEventListener("click", e => {
+        e.stopPropagation();
+        if (vybrana === el) { el.classList.remove("vybrana"); vybrana = null; return; }
+        sek.querySelectorAll(".karta.vybrana").forEach(x => x.classList.remove("vybrana"));
+        vybrana = el; el.classList.add("vybrana");
+      });
+      bazen.appendChild(el);
+    });
+    aktualizuj();
+  }
+  bazen.addEventListener("dragover", e => { e.preventDefault(); bazen.classList.add("cil"); });
+  bazen.addEventListener("dragleave", () => bazen.classList.remove("cil"));
+  bazen.addEventListener("drop", e => { e.preventDefault(); bazen.classList.remove("cil"); if (vybrana) presun(vybrana, bazen); });
+  bazen.addEventListener("click", () => { if (vybrana) presun(vybrana, bazen); });
+  sek.querySelector(".zkontroluj").addEventListener("click", () => {
+    let dobre = 0;
+    skup.querySelectorAll(".skupina").forEach(s => s.querySelectorAll(".karta").forEach(k => {
+      const spravne = k.dataset.ok.split("|"), ok = spravne.includes(s.dataset.skupina);
+      k.classList.toggle("dobre", ok); k.classList.toggle("spatne", !ok);
+      if (!k.querySelector("small")) {
+        const sm = document.createElement("small");
+        sm.textContent = (ok ? "" : "Patří do: " + spravne.join(" nebo ") + ". ") + k.dataset.proc;
+        k.appendChild(sm);
+      }
+      if (ok) dobre++;
+    }));
+    const zbyva = bazen.querySelectorAll(".karta").length;
+    vys.textContent = `Správně ${dobre} z ${cv.karty.length}.` +
+      (zbyva ? ` Ještě ti zbývá ${zbyva}.` : dobre === cv.karty.length ? " Výborně!" : " Červené karty přesuň jinam.");
+  });
+  sek.querySelector(".znovu").addEventListener("click", rozdej);
+  rozdej();
+  return rozdej;
+}
+
+// ---------- otázky s výběrem odpovědi ----------
+function vyber() {
+  const sek = document.getElementById("c2"), sez = sek.querySelector(".seznam"), vys = sek.querySelector(".vysledek");
+  function rozdej() {
+    sez.innerHTML = ""; vys.textContent = "";
+    const otazky = OTAZKY.filter(o => T() || !o[5]);
+    let hotovo = 0, dobre = 0;
+    otazky.forEach(([t, moznosti, spravna, proc, cesta], i) => {
+      const el = document.createElement("div");
+      el.className = "tvrzeni";
+      el.innerHTML = `<p>${i + 1}. ${t}</p><div class="pl"></div>`;
+      const pl = el.querySelector(".pl");
+      zamichej(moznosti.map((m, j) => [m, j === spravna])).forEach(([m, ok]) => {
+        const b = document.createElement("button");
+        b.textContent = m; if (cesta) b.classList.add("cesta");
+        b.addEventListener("click", () => {
+          el.classList.add(ok ? "dobre" : "spatne"); b.classList.add("oznacena");
+          pl.querySelectorAll("button").forEach(x => x.disabled = true);
+          const s = document.createElement("span"); s.className = "proc";
+          s.textContent = (ok ? "✔ Správně. " : "✘ Správně je: " + moznosti[spravna] + ". ") + proc;
+          pl.appendChild(s);
+          hotovo++; if (ok) dobre++;
+          vys.textContent = hotovo === otazky.length ? `Správně ${dobre} z ${otazky.length}.` : "";
+        });
+        pl.appendChild(b);
+      });
+      sez.appendChild(el);
+    });
+  }
+  sek.querySelector(".znovu").addEventListener("click", rozdej);
+  rozdej();
+  return rozdej;
+}
+
+// ---------- pravda, nebo lež ----------
+function pravdaLez() {
+  const sek = document.getElementById("c5"), sez = sek.querySelector(".seznam"), vys = sek.querySelector(".vysledek"), zaver = sek.querySelector(".zaver");
+  function rozdej() {
+    sez.innerHTML = ""; vys.textContent = ""; zaver.hidden = true;
+    const tvrzeni = TVRZENI.filter(t => T() || !t[3]);
+    let hotovo = 0, dobre = 0;
+    tvrzeni.forEach(([t, pravda, proc], i) => {
+      const el = document.createElement("div");
+      el.className = "tvrzeni";
+      el.innerHTML = `<p>${i + 1}. ${t}</p><div class="pl"><button data-v="1">Pravda</button><button data-v="0">Lež</button><span class="proc"></span></div>`;
+      el.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+        const ok = (b.dataset.v === "1") === pravda;
+        el.classList.add(ok ? "dobre" : "spatne"); b.classList.add("oznacena");
+        el.querySelector(".proc").textContent = (ok ? "✔ Správně. " : "✘ Je to " + (pravda ? "pravda. " : "lež. ")) + proc;
+        el.querySelectorAll("button").forEach(x => x.disabled = true);
+        hotovo++; if (ok) dobre++;
+        if (hotovo === tvrzeni.length) { vys.textContent = `Správně ${dobre} z ${tvrzeni.length}.`; zaver.hidden = false; }
+      }));
+      sez.appendChild(el);
+    });
+  }
+  sek.querySelector(".znovu").addEventListener("click", rozdej);
+  rozdej();
+  return rozdej;
+}
+
+// ---------- najdi soubor: pořádek × chaos ----------
+function najdiSoubor() {
+  const sek = document.getElementById("c1"), hraci = sek.querySelector(".hraci");
+  const panel = sek.querySelector(".hledej"), cilEl = sek.querySelector(".cil4"), casEl = sek.querySelector(".cas");
+  const kolikEl = sek.querySelector(".kolik"), vys = sek.querySelector(".vysledky4"), start = sek.querySelector(".start4");
+  let casy = {}, kolo = 0, poradi = [], hledane = [], krok = 0, t0 = 0, tik = null;
+  const fmt = s => s.toFixed(1).replace(".", ",") + " s";
+  const slozky = () => Object.fromEntries(Object.entries(SLOZKY4).map(([k, v]) => [k, T() ? v : v.slice(0, 4)]));
+
+  function soubor(nazev) {
+    const el = document.createElement("div");
+    el.className = "s4"; el.textContent = nazev; el.title = nazev;
+    el.addEventListener("click", () => klik(el, nazev));
+    return el;
+  }
+  function poradek() {
+    const w = document.createElement("div"); w.className = "slozky4";
+    Object.entries(slozky()).forEach(([jm, soubory]) => {
+      const sl = document.createElement("div"); sl.className = "sl";
+      sl.innerHTML = `<h3>📁 ${jm}</h3><div class="obsah4"></div>`;
+      soubory.slice().sort((a, b) => a.localeCompare(b, "cs")).forEach(n => sl.querySelector(".obsah4").appendChild(soubor(n)));
+      w.appendChild(sl);
+    });
+    return w;
+  }
+  function chaos() {
+    const w = document.createElement("div"); w.className = "plocha";
+    const vse = Object.values(slozky()).flat();
+    const sl = 6, sirka = Math.max(hraci.clientWidth, 700), rady = Math.ceil(vse.length / sl);
+    w.style.height = (rady * 76 + 70) + "px";
+    zamichej(vse).forEach((n, i) => {
+      const el = soubor(n);
+      const x = (i % sl) * (sirka - 210) / (sl - 1) + (Math.random() * 40 - 20);
+      const y = Math.floor(i / sl) * 76 + 10 + Math.random() * 40;
+      el.style.left = Math.max(4, x) + "px"; el.style.top = y + "px";
+      el.style.transform = `rotate(${Math.round(Math.random() * 16 - 8)}deg)`;
+      w.appendChild(el);
+    });
+    return w;
+  }
+  function spustKolo() {
+    const v = poradi[kolo];
+    hledane = HLEDANE[kolo]; krok = 0;
+    hraci.innerHTML = ""; hraci.appendChild(v === "poradek" ? poradek() : chaos());
+    panel.hidden = false; ukazCil();
+    t0 = performance.now(); clearInterval(tik);
+    tik = setInterval(() => { casEl.textContent = fmt((performance.now() - t0) / 1000); }, 100);
+  }
+  function ukazCil() { cilEl.textContent = hledane[krok][T() ? 1 : 0]; kolikEl.textContent = `${krok + 1} ze 3`; }
+  function klik(el, nazev) {
+    if (!hledane.length || krok >= hledane.length) return;
+    if (nazev !== hledane[krok][0]) { el.classList.add("vedle"); setTimeout(() => el.classList.remove("vedle"), 500); return; }
+    el.classList.add("trefa"); krok++;
+    if (krok < hledane.length) { ukazCil(); return; }
+    clearInterval(tik);
+    const s = (performance.now() - t0) / 1000; casy[poradi[kolo]] = s; casEl.textContent = fmt(s);
+    kolo++;
+    vys.hidden = false;
+    if (kolo < 2) {
+      const dalsi = poradi[kolo] === "poradek" ? "POŘÁDEK (složky)" : "CHAOS (rozházená plocha)";
+      vys.innerHTML = `Hotovo za <b>${fmt(s)}</b>. Teď druhá plocha: ${dalsi}. <button class="hlavni" style="font:inherit;font-weight:bold;padding:8px 18px;border-radius:10px;border:none;cursor:pointer">Pokračovat</button>`;
+      vys.querySelector("button").addEventListener("click", () => { vys.hidden = true; spustKolo(); });
+    } else {
+      const p = casy.poradek, c = casy.chaos;
+      const veta = p < c ? "Ve složkách jsi hledal/a rychleji. Proč?"
+        : "Tentokrát ti šel rychleji chaos. A co kdyby souborů bylo pět set?";
+      vys.innerHTML = `Pořádek (složky): <b>${fmt(p)}</b> · Chaos (plocha): <b>${fmt(c)}</b><br>${veta}
+        <br><button class="vedlejsi" style="font:inherit;font-weight:bold;padding:8px 18px;border-radius:10px;cursor:pointer;margin-top:10px">Začít znovu</button>`;
+      vys.querySelector("button").addEventListener("click", reset);
+      hledane = [];
+    }
+  }
+  function reset() {
+    clearInterval(tik); casy = {}; kolo = 0; hledane = [];
+    hraci.innerHTML = ""; panel.hidden = true; vys.hidden = true; start.hidden = false;
+  }
+  start.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    poradi = b.dataset.v === "poradek" ? ["poradek", "chaos"] : ["chaos", "poradek"];
+    start.hidden = true; spustKolo();
+  }));
+  return reset;
+}
+
+// ---------- spuštění a přepínání úrovně ----------
+const ZNOVU = [najdiSoubor(), vyber(), trideni("c4"), pravdaLez(), trideni("c6")];
+document.querySelectorAll(".uroven button").forEach(b => b.addEventListener("click", () => {
+  UROVEN = b.dataset.u;
+  document.querySelectorAll(".uroven button").forEach(x => x.classList.toggle("aktivni", x === b));
+  document.body.classList.toggle("tezsi", T());
+  ZNOVU.forEach(f => f());
+}));
+</script>
+</body>
+</html>
