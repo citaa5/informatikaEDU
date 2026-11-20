@@ -62,7 +62,8 @@
   .hledej .cas { font-variant-numeric: tabular-nums; }
   .plocha { position: relative; height: 640px; background: #3b6b8f; border-radius: 14px; overflow: hidden; }
   .plocha .s4 { position: absolute; white-space: nowrap; }
-  .slozky4 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .plocha .s4:hover { z-index: 99 !important; outline: 3px solid var(--zluta); }
+  .slozky4 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
   .slozky4 .sl { background: var(--bila); border: 3px solid var(--navy); border-radius: 12px; min-width: 0; }
   .slozky4 .sl h3 { margin: 0; padding: 8px; background: var(--navy); color: var(--bila); border-radius: 8px 8px 0 0; font-size: 20px; text-align: center; }
   .slozky4 .sl .obsah4 { padding: 6px; display: flex; flex-direction: column; gap: 5px; }
@@ -350,19 +351,18 @@ const TVRZENI = [
   ["Na čem mi záleží, stačí mít jen v cloudu. Tam se nic neztratí.", false, "I v cloudu se dá soubor smazat nebo zapomenout heslo. Mám ho na dvou místech.", true]
 ];
 
-// najdi soubor: první 4 soubory ve složce = základní úroveň
+// najdi soubor: na obou plochách stejných 50 souborů (5 složek × 10); u hledaných souborů podobné návnady
 const SLOZKY4 = {
-  "Zeměpis": ["Afrika-podnebi.docx", "Afrika-reky.docx", "mapa-Evropy.png", "Asie-test.pdf", "hory-sveta.pptx", "pocasi.xlsx", "Nil.jpg", "kontinenty.txt"],
-  "Čeština": ["Babicka-denik.docx", "popis-osoby.docx", "slovesa.docx", "basnicka.txt", "diktat-oprava.pdf", "vyjmenovana-slova.pptx", "Kytice.pdf", "dopis.docx"],
-  "Fyzika": ["mereni-delky.xlsx", "planety.pptx", "teplomer.jpg", "hustota.xlsx", "sila-pokus.docx", "jednotky.pdf", "gravitace.mp4", "magnety.png"],
-  "Fotky": ["Chorvatsko-more.jpg", "Chorvatsko-plaz.jpg", "dort.jpg", "pes-Max.jpg", "tabor-2026.mp4", "lyzak.jpg", "vanoce.jpg", "babicka-deda.png"],
-  "Hudba": ["oblibena.mp3", "buben.mp3", "koncert.mp4", "playlist.txt", "akordy.pdf", "noty.pdf", "zpevnik.docx", "fletna.mp3"],
-  "Hry": ["Minecraft-svet.zip", "sachy.txt", "pozice.sav", "skore.xlsx", "level-mapa.png", "navod-hra.pdf", "instalace.exe", "screen-hra.png"]
+  "Zeměpis": ["Afrika-reky.docx", "Afrika-reky-osnova.txt", "Afrika-podnebi.docx", "Afrika-zvirata.docx", "mapa-Afriky.png", "Asie-test.pdf", "hory-sveta.pptx", "pocasi.xlsx", "Nil.jpg", "kontinenty.txt"],
+  "Čeština": ["popis-osoby.docx", "popis-osoby-osnova.txt", "popis-mista.docx", "Babicka-denik.docx", "slovesa.docx", "basnicka.txt", "diktat-oprava.pdf", "vyjmenovana-slova.pptx", "Kytice.pdf", "dopis.docx"],
+  "Fyzika": ["planety.pptx", "planety-test.pdf", "planety-obrazky.png", "mereni-delky.xlsx", "teplomer.jpg", "hustota.xlsx", "sila-pokus.docx", "jednotky.pdf", "gravitace.mp4", "magnety.png"],
+  "Fotky": ["pes-Max.jpg", "pes-Rex.jpg", "pes-soused.jpg", "Chorvatsko-more.jpg", "Chorvatsko-plaz.jpg", "dort.jpg", "tabor-2026.mp4", "lyzak.jpg", "vanoce.jpg", "babicka-deda.png"],
+  "Zábava": ["skore.xlsx", "skore-turnaj.pdf", "buben.mp3", "buben-noty.pdf", "buben-video.mp4", "oblibena.mp3", "koncert.mp4", "Minecraft-svet.zip", "sachy.txt", "instalace.exe"]
 };
 // [název, popis pro těžší úroveň]
 const HLEDANE = [
-  [["Afrika-reky.docx", "referát o řekách Afriky"], ["pes-Max.jpg", "fotka psa"], ["skore.xlsx", "tabulka s výsledky ze hry"]],
-  [["planety.pptx", "prezentace o sluneční soustavě"], ["popis-osoby.docx", "sloh o člověku"], ["buben.mp3", "nahrávka bubnu"]]
+  [["Afrika-reky.docx", "referát o řekách Afriky"], ["pes-Max.jpg", "fotka psa Maxe"], ["skore.xlsx", "tabulka se skóre ze hry"]],
+  [["planety.pptx", "prezentace o planetách"], ["popis-osoby.docx", "slohová práce: popis osoby"], ["buben.mp3", "zvuková nahrávka bubnu"]]
 ];
 
 // ---------- přepínání cvičení ----------
@@ -513,7 +513,7 @@ function najdiSoubor() {
   const kolikEl = sek.querySelector(".kolik"), vys = sek.querySelector(".vysledky4"), start = sek.querySelector(".start4");
   let casy = {}, kolo = 0, poradi = [], hledane = [], krok = 0, t0 = 0, tik = null;
   const fmt = s => s.toFixed(1).replace(".", ",") + " s";
-  const slozky = () => Object.fromEntries(Object.entries(SLOZKY4).map(([k, v]) => [k, T() ? v : v.slice(0, 4)]));
+  const slozky = () => SLOZKY4;
 
   function soubor(nazev) {
     const el = document.createElement("div");
@@ -534,14 +534,21 @@ function najdiSoubor() {
   function chaos() {
     const w = document.createElement("div"); w.className = "plocha";
     const vse = Object.values(slozky()).flat();
-    const sl = 6, sirka = Math.max(hraci.clientWidth, 700), rady = Math.ceil(vse.length / sl);
-    w.style.height = (rady * 76 + 70) + "px";
+    // hustá plocha: 10 × 5 políček, soubory se v nich náhodně posunou, natočí, mají různou velikost a překrývají se
+    const sl = 10, rady = Math.ceil(vse.length / sl), sirka = Math.max(hraci.clientWidth, 700), vyska = 600;
+    const bunkaX = (sirka - 190) / (sl - 1), bunkaY = (vyska - 60) / rady;
+    const barvy = ["#ffffff", "#fff7d6", "#e3f0ff", "#ffe9ec", "#eaf7e6"];
+    w.style.height = vyska + "px";
     zamichej(vse).forEach((n, i) => {
       const el = soubor(n);
-      const x = (i % sl) * (sirka - 210) / (sl - 1) + (Math.random() * 40 - 20);
-      const y = Math.floor(i / sl) * 76 + 10 + Math.random() * 40;
-      el.style.left = Math.max(4, x) + "px"; el.style.top = y + "px";
-      el.style.transform = `rotate(${Math.round(Math.random() * 16 - 8)}deg)`;
+      const x = (i % sl) * bunkaX + (Math.random() - 0.5) * bunkaX * 0.9;
+      const y = Math.floor(i / sl) * bunkaY + 10 + Math.random() * bunkaY * 0.7;
+      el.style.left = Math.min(sirka - 170, Math.max(4, x)) + "px"; el.style.top = y + "px";
+      el.style.transform = `rotate(${Math.round(Math.random() * 50 - 25)}deg)`;
+      el.style.fontSize = (12 + Math.floor(Math.random() * 8)) + "px";
+      el.style.background = barvy[Math.floor(Math.random() * barvy.length)];
+      // hledané soubory nikdy úplně nezakryje jiný soubor (jinak by nešly najít)
+      el.style.zIndex = HLEDANE.flat().some(h => h[0] === n) ? 45 + Math.floor(Math.random() * 5) : Math.floor(Math.random() * 45);
       w.appendChild(el);
     });
     return w;
