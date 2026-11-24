@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Filip Cihlář">
+<title>Scratch – dnešní hodina · 8. ročník</title>
+<style>
+:root{--navy:#1A2D5C;--red:#C8102E;--green:#2e7d32;--line:#d5d9e2;--bg:#f4f6fa}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:#1d1d1f;font-family:"Segoe UI",Calibri,Arial,sans-serif;font-size:18px;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header .t{font-weight:700;font-size:19px}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps span{font-size:14px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.15)}
+.steps span.on{background:#FFBF00;color:#1d1d1f;font-weight:700}
+.steps span.ok{background:#4caf50}
+main{max-width:1060px;margin:0 auto;padding:18px 20px 110px}
+h1{color:var(--navy);font-size:30px;margin:4px 0 6px}
+h2{color:var(--navy);font-size:22px;margin:16px 0 6px}
+.lead{font-size:20px;color:#333;margin:0 0 12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:0 0 14px}
+.min{display:inline-block;background:#eef1f8;color:var(--navy);font-size:14px;font-weight:700;border-radius:10px;padding:2px 10px;margin-bottom:6px}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:5}
+button{font:inherit;cursor:pointer;border-radius:10px;border:0;padding:10px 18px;font-weight:700}
+.btn{background:var(--navy);color:#fff}
+.btn.big{font-size:20px;padding:12px 26px}
+.btn.green{background:#2e9e44}
+.btn.ghost{background:#e9ecf3;color:var(--navy)}
+.btn.flag{background:#4CAF50;color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(46,158,68,.25)}}
+/* bloky */
+.blk{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;min-height:34px;border-radius:7px;font-weight:600;font-size:16px;border:1px solid rgba(0,0,0,.18);white-space:nowrap;user-select:none}
+.blk.hat{border-radius:22px 22px 7px 7px;padding-top:10px}
+.inp{background:#fff;color:#333;border-radius:11px;padding:0 8px;font-weight:600;min-width:22px;text-align:center}
+.chip{display:inline-block;border-radius:6px;padding:0 7px;font-size:16px;font-weight:600;line-height:1.55;white-space:nowrap}
+/* skládačka */
+.puzzle{display:grid;grid-template-columns:300px 1fr 400px;gap:14px;align-items:start}
+@media (max-width:1000px){.puzzle{grid-template-columns:1fr 1fr}.puzzle .stagebox{grid-column:1/3}}
+.pal,.ws{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:300px}
+.pal h3,.ws h3{margin:0 0 8px;font-size:15px;color:#555;font-weight:600}
+.pal .blk{display:flex;width:max-content;margin:0 0 8px;cursor:pointer}
+.pal .blk:hover{filter:brightness(1.08);transform:translateX(3px)}
+.pal .gone{visibility:hidden;height:0;margin:0;padding:0;min-height:0;border:0}
+.ws{background:#f9fafc;background-image:radial-gradient(#dfe3ea 1px,transparent 1px);background-size:18px 18px}
+.ws .blk{cursor:pointer}
+.ws .blk:hover{outline:2px solid #c62828}
+.slot{height:12px;width:220px;margin:2px 0;border-radius:4px;cursor:pointer;border:1px dashed #cfd5e0}
+.slot:hover{background:#cfd8ea}
+.slot.on{height:30px;border:2px dashed #2e9e44;background:#eaf7ec;color:#2e7d32;font-size:14px;font-weight:700;display:flex;align-items:center;padding-left:8px;width:220px}
+.cb{display:inline-block}
+.cb .ctop{border-radius:7px 7px 0 0}
+.cb .cin{border-left:18px solid;margin-left:0;padding:3px 0 3px 6px;min-height:30px}
+.cb .cbot{height:16px;width:150px;border-radius:0 0 7px 7px;border:1px solid rgba(0,0,0,.18);border-top:0}
+.stagebox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+.stagebar{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+canvas{width:100%;border:1px solid #c9ced8;border-radius:6px;background:#fff;display:block}
+.msg{margin-top:10px;padding:10px 14px;border-radius:10px;font-weight:600;display:none}
+.msg.bad{display:block;background:#fdecea;color:#b71c1c}
+.msg.good{display:block;background:#e8f5e9;color:#1b5e20}
+.msg.info{display:block;background:#eef1f8;color:var(--navy)}
+.help{font-size:15px;color:#555;margin:6px 0 0}
+/* kvíz */
+.q{margin-bottom:16px}
+.opts{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.opt{background:#fff;border:2px solid var(--line);color:#1d1d1f;font-weight:600;padding:10px 16px}
+.opt:hover{border-color:var(--navy)}
+.opt.right{border-color:#2e9e44;background:#e8f5e9}
+.opt.wrong{border-color:#c62828;background:#fdecea}
+.exp{margin-top:8px;font-weight:600;display:none}
+.script{display:inline-flex;flex-direction:column;gap:3px;background:#f9fafc;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:6px}
+/* úlohy */
+.uh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.hv{color:#FFAB19;font-size:22px;letter-spacing:2px}.hv span{color:#ddd}
+ol.kroky{margin:6px 0 8px 22px;padding:0}
+ol.kroky li{margin:6px 0;line-height:1.7}
+.ok b{color:var(--green)}.bonus b{color:var(--red)}
+.tip{background:#fff8e1;border-left:5px solid #FFBF00;padding:8px 12px;border-radius:6px;margin:10px 0;display:none}
+.sol{background:#f9fafc;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;display:none}
+.sol .r{margin:3px 0}
+.sol .note{color:var(--red);font-weight:600;margin-top:4px}
+.donebox{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.donebox label{font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+.donebox input{width:22px;height:22px}
+.wrap{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.wrap ol{flex:1;min-width:380px}
+.summary{font-size:22px;font-weight:700;color:var(--navy);background:#eef1f8;border-radius:10px;padding:12px 16px;display:inline-block}
+.num{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;align-items:center;justify-content:center;margin-right:8px;flex:none}
+.li{display:flex;align-items:flex-start;margin:8px 0}
+.kat{display:inline-block;font-size:13px;font-weight:700;border-radius:10px;padding:1px 8px;margin-right:4px}
+</style>
+</head>
+<body>
+<header><div class="t">Scratch · 8. ročník</div><div class="steps" id="steps"></div></header>
+<main id="main"></main>
+<nav class="bottom">
+  <button class="btn ghost" id="prev">← Zpět</button>
+  <span id="pos" style="color:#777;font-size:15px"></span>
+  <button class="btn big" id="next">Další →</button>
+</nav>
+
+<script>
+"use strict";
+/* ---------- barvy kategorií (Scratch 3) ---------- */
+const KAT = {udalosti:["Události","#FFBF00","#1d1d1f"], pohyb:["Pohyb","#4C97FF","#fff"], vzhled:["Vzhled","#9966FF","#fff"],
+  ovladani:["Ovládání","#FFAB19","#1d1d1f"], vnimani:["Vnímání","#5CB1D6","#fff"], operatory:["Operátory","#59C059","#fff"],
+  promenne:["Proměnné","#FF8C1A","#fff"], pero:["Pero","#0FBD8C","#fff"]};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function label(t){ return esc(t).replace(/\[([^\]]*)\]/g,'<span class="inp">$1</span>')
+  .replace(/⟨([^⟩]*)⟩/g,'<span class="inp" style="background:#5CB1D6;color:#fff;border:2px solid #fff;border-radius:4px;padding:0 10px">$1</span>'); }
+function blkHTML(b, extra=""){ const [,bg,fg]=KAT[b.kat];
+  return `<div class="blk${b.op==="hat"?" hat":""}" style="background:${bg};color:${fg}" ${extra}>${label(b.t)}</div>`; }
+function chip(kat, t){ const [,bg,fg]=KAT[kat]; return `<span class="chip" style="background:${bg};color:${fg}">${esc(t)}</span>`; }
+function md(s){ return s.replace(/\{(\w+):([^}]*)\}/g,(m,k,t)=>chip(k,t)); }
+
+/* ---------- uložený postup ---------- */
+const KEY="scratch8d-v2-"+location.pathname;
+let S = {screen:0, done:{}, bonus:{}, solved:{}};
+try{ Object.assign(S, JSON.parse(localStorage.getItem(KEY)||"{}")); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* ---------- mini scéna (souřadnice jako ve Scratchi: 480 × 360, střed 0,0) ---------- */
+class Stage{
+  constructor(canvas, init){ this.c=canvas; this.g=canvas.getContext("2d"); this.init=init; this.reset(); }
+  reset(){ const i=this.init; this.x=i.x; this.y=i.y; this.dir=i.dir; this.pen=false; this.lines=(i.lines||[]).map(l=>l.slice());
+    this.bubble=null; this.stopFlag=true; this.warn=false; this.draw(); }
+  edge(){ return Math.abs(this.x)+24>=240 || Math.abs(this.y)+24>=180; }
+  px(x){return x+240} py(y){return 180-y}
+  draw(){ const g=this.g; g.clearRect(0,0,480,360);
+    g.strokeStyle="#eef0f4"; g.lineWidth=1; g.beginPath(); g.moveTo(240,0); g.lineTo(240,360); g.moveTo(0,180); g.lineTo(480,180); g.stroke();
+    g.fillStyle="#b0b6c3"; g.font="12px Segoe UI"; g.fillText("0, 0",244,176);
+    g.strokeStyle="#1f6fe5"; g.lineWidth=4; g.lineCap="round";
+    for(const [a,b,c,d] of this.lines){ g.beginPath(); g.moveTo(this.px(a),this.py(b)); g.lineTo(this.px(c),this.py(d)); g.stroke(); }
+    g.save(); g.translate(this.px(this.x),this.py(this.y)); g.rotate((this.dir-90)*Math.PI/180);
+    g.font="44px 'Segoe UI Emoji','Apple Color Emoji',sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("🐱",0,0);
+    g.restore();
+    if(this.bubble){ const bx=this.px(this.x)+18, by=this.py(this.y)-58; g.font="bold 18px Segoe UI"; const w=g.measureText(this.bubble).width+24;
+      g.fillStyle="#fff"; g.strokeStyle="#888"; g.lineWidth=2; g.beginPath(); g.roundRect(bx,by,w,36,14); g.fill(); g.stroke();
+      g.fillStyle="#333"; g.textAlign="left"; g.textBaseline="middle"; g.fillText(this.bubble,bx+12,by+18); }
+  }
+  sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  async move(n){ const r=this.dir*Math.PI/180, x0=this.x, y0=this.y, x1=x0+n*Math.sin(r), y1=y0+n*Math.cos(r);
+    let L=null; if(this.pen){ L=[x0,y0,x0,y0]; this.lines.push(L); }
+    const steps=Math.max(8,Math.round(Math.abs(n)/8));
+    for(let k=1;k<=steps;k++){ if(this.stopFlag) return; this.x=x0+(x1-x0)*k/steps; this.y=y0+(y1-y0)*k/steps; if(L){L[2]=this.x;L[3]=this.y;} this.draw(); await this.sleep(22); }
+    this.x=Math.round(x1); this.y=Math.round(y1); if(L){L[2]=this.x;L[3]=this.y;} this.draw(); }
+  async turn(d){ const d0=this.dir; for(let k=1;k<=8;k++){ if(this.stopFlag) return; this.dir=d0+d*k/8; this.draw(); await this.sleep(25);} this.dir=((d0+d)%360+360)%360; this.draw(); }
+  async exec(list){ for(const b of list){ if(this.stopFlag) return; await this.step(b); } }
+  async step(b){ const a=b.a||[];
+    switch(b.op){
+      case "hat": break;
+      case "goto": if(this.pen) this.lines.push([this.x,this.y,a[0],a[1]]); this.x=a[0]; this.y=a[1]; this.draw(); await this.sleep(150); break;
+      case "dir": this.dir=a[0]; this.draw(); await this.sleep(150); break;
+      case "say": this.bubble=a[0]; this.draw(); await this.sleep(a[1]*1000); this.bubble=null; this.draw(); break;
+      case "move": await this.move(a[0]); break;
+      case "turn": await this.turn(a[0]); break;
+      case "wait": await this.sleep(a[0]*1000); break;
+      case "clear": this.lines=[]; this.draw(); await this.sleep(150); break;
+      case "pendown": this.pen=true; break;
+      case "penup": this.pen=false; break;
+      case "repeat": for(let i=0;i<a[0];i++){ if(this.stopFlag) return; await this.exec(b.kids||[]); } break;
+      case "until": { let n=0; while(!this.edge()){ if(this.stopFlag) return; if(++n>150){ this.warn=true; return; } await this.exec(b.kids||[]); await this.sleep(16); } break; }
+    }
+  }
+}
+
+/* ---------- skládačky ---------- */
+const PUZ = {
+  s0: { title:"Kočka řekne Ahoj", min:"spojovačka 1 · rozcvička · asi 2 minuty",
+    zad:"Poskládej program: po kliknutí na zelenou vlajku kočka řekne „Ahoj!“ a pak popojde dopředu.",
+    how:true,
+    hints:["Program vždycky začíná žlutým blokem s vlajkou. Ten dej první.","Kočka nejdřív mluví a teprve potom jde. Bublina je tedy druhá.","Pořadí: po kliknutí na ⚑ → bublina Ahoj! → dopředu o 100 kroků."],
+    init:{x:-120,y:0,dir:90},
+    blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, s:{kat:"vzhled",t:"bublina [Ahoj!] [2] sekund",op:"say",a:["Ahoj!",2]},
+      m:{kat:"pohyb",t:"dopředu o [100] kroků",op:"move",a:[100]} },
+    order:["m","h","s"],
+    check(tree){ const ids=tree.map(n=>n.id);
+      if(ids.length<3) return `Ve skriptu máš ${ids.length} ze 3 bloků. Klikni i na ty, které zůstaly vlevo.`;
+      if(ids[0]!=="h") return "Nahoře musí být žlutý blok „po kliknutí na ⚑“. Bez něj kočka neví, kdy začít.";
+      if(ids.join()!=="h,s,m") return "Kočka má nejdřív pozdravit a pak jít. Prohoď bublinu a „dopředu“.";
+      return true; } },
+  a1: { title:"Kočka se představí", min:"spojovačka 2 · asi 3 minuty",
+    zad:"Kočka skočí na start vlevo, řekne „Ahoj!“, přejde doprava, chvilku počká a couvne zpátky na start.",
+    hints:["Nahoře je žlutý blok po kliknutí na ⚑.","Pak kočku postav na start: skoč na x: -150 y: 0 a nastav směr 90 (= kouká doprava). Proto začne vždycky vlevo, ať stojí kdekoli.",
+      "Potom bublina Ahoj!, dopředu o 150 kroků a čekej 1 sekund.","Úplně dole je dopředu o -150 kroků. Mínus znamená couvni zpátky."],
+    init:{x:60,y:-90,dir:0},
+    blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, g:{kat:"pohyb",t:"skoč na x: [-150] y: [0]",op:"goto",a:[-150,0]},
+      d:{kat:"pohyb",t:"nastav směr [90]",op:"dir",a:[90]}, s:{kat:"vzhled",t:"bublina [Ahoj!] [2] sekund",op:"say",a:["Ahoj!",2]},
+      m1:{kat:"pohyb",t:"dopředu o [150] kroků",op:"move",a:[150]}, w:{kat:"ovladani",t:"čekej [1] sekund",op:"wait",a:[1]},
+      m2:{kat:"pohyb",t:"dopředu o [-150] kroků",op:"move",a:[-150]} },
+    order:["m2","s","h","w","d","m1","g"],
+    check(tree){ const ids=tree.map(n=>n.id); const v=[["h","g","d","s","m1","w","m2"],["h","d","g","s","m1","w","m2"]];
+      if(ids.length<7) return `Ve skriptu máš ${ids.length} ze 7 bloků. Přidej i ty ostatní.`;
+      if(ids[0]!=="h") return "Skript musí začínat žlutým blokem „po kliknutí na ⚑“. Bez něj kočka neví, kdy začít.";
+      if(v.some(x=>x.join()===ids.join())) return true;
+      let best=0; for(const x of v){ let i=0; while(i<7&&x[i]===ids[i]) i++; best=Math.max(best,i); }
+      return `${best===1?"Blok č. 1 je":`Bloky č. 1 až ${best} jsou`} dobře, blok č. ${best+1} sem nepatří. Spusť vlajku a sleduj, kdy kočka udělá něco jinak než v zadání.`; } },
+  a2: { title:"Čtverec perem", min:"spojovačka 3 · asi 3 minuty",
+    zad:"Kočka nejdřív smaže starou čmáranici a pak nakreslí čtverec.<br><small>Opakování obejme bloky, které do něj přidáš. Až budeš chtít pokračovat <b>pod</b> opakováním, klikni na čárkovaný řádek pod oranžovou čelistí.</small>",
+    hints:["Začátek: po kliknutí na ⚑, smaž, skoč na x: 0 y: 0, nastav směr 90.","Pak pero zapni – od té chvíle kočka za sebou kreslí čáru.",
+      "Opakuj 4 krát a do něj dopředu o 100 kroků a otoč se o 90 stupňů. Čtverec má 4 strany a 4 rohy.","Pod opakování (klikni na čárkovaný řádek pod oranžovou čelistí) dej pero vypni."],
+    init:{x:-140,y:70,dir:90,lines:[[-210,-120,-60,-150],[-60,-150,-20,-100]]},
+    blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, c:{kat:"pero",t:"smaž",op:"clear"}, g:{kat:"pohyb",t:"skoč na x: [0] y: [0]",op:"goto",a:[0,0]},
+      d:{kat:"pohyb",t:"nastav směr [90]",op:"dir",a:[90]}, pd:{kat:"pero",t:"pero zapni",op:"pendown"},
+      r:{kat:"ovladani",t:"opakuj [4] krát",op:"repeat",a:[4],c:true}, f:{kat:"pohyb",t:"dopředu o [100] kroků",op:"move",a:[100]},
+      t:{kat:"pohyb",t:"otoč se ↻ o [90] stupňů",op:"turn",a:[90]}, pu:{kat:"pero",t:"pero vypni",op:"penup"} },
+    order:["f","pu","r","h","t","g","pd","c","d"],
+    check(tree){ const all=[]; (function walk(L){for(const n of L){all.push(n.id); if(n.kids) walk(n.kids);}})(tree);
+      if(all.length<9) return `Ve skriptu máš ${all.length} z 9 bloků. Přidej i ty ostatní.`;
+      if(tree[0].id!=="h") return "Skript musí začínat žlutým blokem „po kliknutí na ⚑“.";
+      const top=tree.map(n=>n.id), r=tree.find(n=>n.id==="r");
+      if(!r) return "Opakování musí být ve skriptu samo, ne schované uvnitř jiného bloku.";
+      const inside=r.kids.map(n=>n.id).sort().join();
+      if(inside!=="f,t") return "Do opakování patří přesně dva bloky: „dopředu o 100 kroků“ a „otoč se o 90 stupňů“. Ostatní dej mimo opakování.";
+      const iR=top.indexOf("r"), iPd=top.indexOf("pd"), iPu=top.indexOf("pu");
+      if(iPd>iR) return "Pero zapni ještě před opakováním – jinak se čtverec nenakreslí celý.";
+      if(iPu<iR) return "Pero vypni až za opakováním, když je čtverec hotový.";
+      if(top.indexOf("g")>iPd||top.indexOf("d")>iPd) return "Kočku nejdřív postav na start (skoč na x: 0 y: 0, nastav směr) a teprve pak zapni pero. Jinak nakreslí čáru navíc.";
+      if(top.indexOf("c")>iPd) return "„Smaž“ dej před „pero zapni“ – jinak smažeš i kus nového čtverce.";
+      return true; } },
+  a3: { title:"Příklad: kočka ke kraji", min:"opakuj dokud · příklad · asi 4 minuty",
+    zad:"Kočka jde doprava tak dlouho, dokud nenarazí na okraj scény. Pak řekne „Jsem na kraji!“. Nevíme, kolik kroků to bude – proto ne „opakuj 10 krát“, ale <b>opakuj dokud nenastane</b>.",
+    hints:["Nahoře po kliknutí na ⚑, pak skoč na x: -180 y: 0 a nastav směr 90.","Pak opakuj dokud nenastane ⟨dotýkáš se okraje?⟩.",
+      "Do opakování dej jen dopředu o 10 kroků. Kočka jde po malých krocích a po každém se zeptá: už jsem u okraje?","Pod opakování dej bublinu Jsem na kraji!"],
+    init:{x:100,y:-100,dir:0},
+    blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, g:{kat:"pohyb",t:"skoč na x: [-180] y: [0]",op:"goto",a:[-180,0]},
+      d:{kat:"pohyb",t:"nastav směr [90]",op:"dir",a:[90]}, u:{kat:"ovladani",t:"opakuj dokud nenastane ⟨dotýkáš se okraje?⟩",op:"until",c:true},
+      f:{kat:"pohyb",t:"dopředu o [10] kroků",op:"move",a:[10]}, s:{kat:"vzhled",t:"bublina [Jsem na kraji!] [2] sekund",op:"say",a:["Jsem na kraji!",2]} },
+    order:["s","f","h","u","d","g"],
+    check(tree){ const all=[]; (function walk(L){for(const n of L){all.push(n.id); if(n.kids) walk(n.kids);}})(tree);
+      if(all.length<6) return `Ve skriptu máš ${all.length} z 6 bloků. Přidej i ty ostatní.`;
+      if(tree[0].id!=="h") return "Skript musí začínat žlutým blokem „po kliknutí na ⚑“.";
+      const top=tree.map(n=>n.id), u=tree.find(n=>n.id==="u");
+      if(!u) return "Opakování musí být ve skriptu samo, ne schované uvnitř jiného bloku.";
+      if(u.kids.map(n=>n.id).join()!=="f") return "Do opakování patří jen „dopředu o 10 kroků“. Kočka udělá krok, podívá se, jestli už je u okraje, a když ne, udělá další.";
+      if(top.indexOf("g")>top.indexOf("u")||top.indexOf("d")>top.indexOf("u")) return "Nejdřív kočku postav na start a natoč doprava, teprve potom opakuj.";
+      if(top.indexOf("s")<top.indexOf("u")) return "Bublina patří pod opakování – kočka má promluvit, až dojde k okraji.";
+      return true; } }
+};
+
+function Puzzle(key){
+  const P=PUZ[key]; let tree=[], used=new Set(), act={path:[],i:0}, stage=null;
+  function listAt(path){ let L=tree; for(const i of path) L=L[i].kids; return L; }
+  function render(){
+    const pal=P.order.map(id=>{ const b=P.blocks[id];
+      return used.has(id)?`<div class="blk gone"></div>`:blkHTML(b,`data-pal="${id}" title="Klikni – blok se přidá na místo ▶"`); }).join("");
+    $("#pal").innerHTML=`<h3>Bloky – klikni a přidá se na zelené místo</h3>${pal||'<p class="help">Všechny bloky jsou ve skriptu.</p>'}`;
+    $("#ws").innerHTML=`<h3>Skript – klikni na blok a vrátí se zpátky · klikni mezi bloky a změníš zelené místo</h3>`+list([],tree);
+  }
+  function slot(path,i){ const on=act.path.join()===path.join()&&act.i===i;
+    return `<div class="slot${on?" on":""}" data-slot="${path.join(".")}|${i}">${on?"▶ sem přijde další blok":""}</div>`; }
+  function list(path,L){ let h=""; L.forEach((n,i)=>{ h+=slot(path,i); h+=node(path.concat(i),n); }); return h+slot(path,L.length); }
+  function node(path,n){ const b=P.blocks[n.id];
+    if(!b.c) return `<div>${blkHTML(b,`data-ws="${path.join(".")}" title="Klikni – vrátit zpět"`)}</div>`;
+    const [,bg,fg]=KAT[b.kat];
+    return `<div class="cb"><div class="blk ctop" style="background:${bg};color:${fg}" data-ws="${path.join(".")}" title="Klikni – vrátit zpět">${label(b.t)}</div>
+      <div class="cin" style="border-color:${bg}">${list(path,n.kids)}</div><div class="cbot" style="background:${bg}"></div></div>`;
+  }
+  function add(id){ if(stage) stage.stopFlag=true; const L=listAt(act.path); const n={id}; if(P.blocks[id].c) n.kids=[];
+    L.splice(act.i,0,n); used.add(id);
+    act = n.kids ? {path:act.path.concat(act.i),i:0} : {path:act.path,i:act.i+1}; msg(); render(); }
+  function remove(pathStr){ if(stage) stage.stopFlag=true; const p=pathStr.split(".").map(Number), i=p.pop(), L=listAt(p);
+    const [n]=L.splice(i,1); (function back(x){used.delete(x.id); (x.kids||[]).forEach(back);})(n);
+    act={path:[],i:tree.length}; msg(); render(); }
+  function msg(cls,t){ const m=$("#msg"); m.className="msg"+(cls?" "+cls:""); m.innerHTML=t||""; }
+  function toBlocks(L){ return L.map(n=>Object.assign({},P.blocks[n.id],{kids:n.kids?toBlocks(n.kids):undefined})); }
+  async function run(){
+    if(!tree.length){ msg("info","Skript je prázdný. Nejdřív přidej bloky."); return; }
+    stage.stopFlag=true; await stage.sleep(60); stage.reset();
+    if(tree[0].id!=="h"){ msg("bad","Kočka nic neudělá. Skript se spustí vlajkou jen tehdy, když nahoře je žlutý blok „po kliknutí na ⚑“."); return; }
+    stage.stopFlag=false; $("#run").disabled=true; await stage.exec(toBlocks(tree)); stage.stopFlag=true; $("#run").disabled=false;
+    if(stage.warn) msg("bad","Opakování se točí pořád dokola a nikdy neskončí: kočka se uvnitř opakování nehýbe, takže k okraji nikdy nedojde.");
+  }
+  function check(){ const r=P.check(tree);
+    if(r===true){ S.solved[key]=true; save(); msg("good","Správně! Klikni na zelenou vlajku a podívej se, jak to kočka udělá. Pak pokračuj tlačítkem Další."); $("#next").classList.add("pulse"); run(); }
+    else msg("bad",r); }
+  const how=P.how?`<div class="card" style="border-left:6px solid #2e9e44;padding:10px 16px"><b>Jak na to:</b> ① klikni na blok vlevo – přesune se doprostřed do skriptu · ② spletl(a) ses? klikni na blok ve skriptu a vrátí se · ③ klikni na <b>⚑ Spustit</b>, dívej se na kočku a pak klikni na <b>Zkontrolovat</b>.</div>`:"";
+  const hints=P.hints?`<div style="margin:0 0 12px"><button class="btn ghost" id="hb">💡 Nápověda</button><ol id="hl" style="margin:8px 0 0 22px;padding:0"></ol></div>`:"";
+  return { html:`<div class="min">${P.min||"spojovačka · asi 3 minuty"}</div><h1>${P.title}</h1><p class="lead">${P.zad}</p>${how}${hints}
+      <div class="puzzle"><div class="pal" id="pal"></div><div class="ws" id="ws"></div>
+      <div class="stagebox"><div class="stagebar"><button class="btn flag" id="run">⚑ Spustit</button><button class="btn ghost" id="stop">⏹</button>
+      <button class="btn green" id="chk">Zkontrolovat</button><button class="btn ghost" id="rst" title="Začít znovu">↺</button></div>
+      <canvas id="cv" width="480" height="360"></canvas><div class="msg" id="msg"></div>
+      <p class="help">Šedý křížek uprostřed je bod x: 0, y: 0.</p></div></div>`,
+    mount(){ stage=new Stage($("#cv"),P.init); render();
+      if(P.hints){ let hi=0; $("#hb").onclick=()=>{ if(hi>=P.hints.length) return; const li=document.createElement("li"); li.style.margin="4px 0"; li.innerHTML=label(P.hints[hi]); $("#hl").appendChild(li); hi++;
+        $("#hb").textContent = hi<P.hints.length ? `💡 Další nápověda (${hi}/${P.hints.length})` : "💡 Víc nápověd není"; $("#hb").disabled = hi>=P.hints.length; }; }
+      $("#pal").onclick=e=>{ const t=e.target.closest("[data-pal]"); if(t) add(t.dataset.pal); };
+      $("#ws").onclick=e=>{ const b=e.target.closest("[data-ws]"); if(b){ remove(b.dataset.ws); return; }
+        const s=e.target.closest("[data-slot]"); if(s){ const [p,i]=s.dataset.slot.split("|"); act={path:p?p.split(".").map(Number):[],i:+i}; render(); } };
+      $("#run").onclick=run; $("#stop").onclick=()=>{stage.stopFlag=true; $("#run").disabled=false;};
+      $("#chk").onclick=check; $("#rst").onclick=()=>{ stage.stopFlag=true; tree=[]; used.clear(); act={path:[],i:0}; stage.reset(); msg(); render(); };
+      if(S.solved[key]) msg("info","Tuhle skládačku už máš vyřešenou. Můžeš ji zkusit znovu, nebo jít dál."); },
+    unmount(){ if(stage) stage.stopFlag=true; } };
+}
+
+/* ---------- pomocník: blok jako obrázek ---------- */
+const b = (kat,t,op)=>blkHTML({kat,t,op});
+
+/* ---------- opakuj dokud nenastane ---------- */
+function Dokud(){
+  const cblk=(kat,t,inner)=>{ const [,bg,fg]=KAT[kat]; return `<div class="cb"><div class="blk ctop" style="background:${bg};color:${fg}">${t}</div>
+    <div class="cin" style="border-color:${bg};display:flex;flex-direction:column;gap:3px">${inner}</div><div class="cbot" style="background:${bg}"></div></div>`; };
+  const cond=t=>`<span class="inp" style="background:#59C059;color:#fff;border:2px solid #fff;border-radius:4px;padding:0 10px">${t}</span>`;
+  const script=`<div class="script">${b("udalosti","po kliknutí na ⚑","hat")}${b("promenne","nastav baterie na [40]")}
+    ${cblk("ovladani",`opakuj dokud nenastane ${cond("baterie = 100")}`, b("ovladani","čekej [1] sekund")+b("promenne","změň baterie o [20]"))}
+    ${b("vzhled","bublina [Nabito!] [2] sekund")}</div>`;
+  const DQ=[
+    {q:`Stejný skript, jen baterie začne na <b>90</b>. Co se stane?`, o:["Skončí po jednom kole.","Nikdy neskončí.","Skončí hned."], ok:1,
+     e:"90, 110, 130… Přesně 100 nikdy nebude, takže podmínka nikdy neplatí. Proto je v úloze 4 podmínka teplota > 99, a ne teplota = 100."},
+    {q:`Baterie začne na <b>100</b>. Kolikrát se provedou bloky uvnitř opakování?`, o:["0krát","1krát","pořád dokola"], ok:0,
+     e:"Scratch se zeptá dřív, než začne kolo. Podmínka platí hned, takže bloky uvnitř přeskočí a rovnou řekne Nabito!"}];
+  let bat, kolo, konec;
+  function reset(){ bat=40; kolo=0; konec=false; $("#tb").innerHTML=""; $("#batv").textContent=bat+" %"; $("#batbar").style.width=bat+"%"; $("#krok").disabled=false; $("#dmsg").className="msg"; }
+  function krok(){ if(konec) return; const row=document.createElement("tr");
+    if(bat===100){ konec=true; row.innerHTML=`<td>–</td><td>${bat}</td><td style="color:#1b5e20;font-weight:700">ano</td><td>konec opakování → kočka řekne <b>Nabito!</b></td>`;
+      $("#tb").appendChild(row); $("#krok").disabled=true; const m=$("#dmsg"); m.className="msg good";
+      m.innerHTML=`Opakování proběhlo ${kolo}krát. Nikdo předem nenapsal „3krát“ – skončilo samo, když podmínka začala platit.`; return; }
+    kolo++; const nb=bat+20;
+    row.innerHTML=`<td>${kolo}.</td><td>${bat}</td><td style="color:#b71c1c;font-weight:700">ne</td><td>čekej 1 s, změň o 20 → baterie <b>${nb}</b></td>`;
+    $("#tb").appendChild(row); bat=nb; $("#batv").textContent=bat+" %"; $("#batbar").style.width=bat+"%"; }
+  return { html:`<div class="min">opakuj dokud · vysvětlení a ukázka · asi 5 minut</div><h1>Opakuj dokud nenastane</h1>
+    <p class="lead">U čtverce víš, kolikrát opakovat: 4 strany = ${chip("ovladani","opakuj 4 krát")}. U nabíjení mobilu to nevíš. Víš jen, <b>kdy přestat</b>: až bude baterie na 100 %.</p>
+    <div class="card" style="border-left:6px solid #FFAB19"><b>Jak to funguje:</b> Před každým kolem se Scratch podívá na podmínku v zeleném okénku.<br>
+      <b style="color:#b71c1c">Neplatí</b> → udělá bloky uvnitř a ptá se znovu. &nbsp; <b style="color:#1b5e20">Platí</b> → opakování skončí a jde se na blok pod ním.<br>
+      Je to otázka ve vývojovém diagramu: větev <b>ne</b> se vrací zpátky, větev <b>ano</b> jde dál.</div>
+    <div class="wrap"><div>${script}</div>
+      <div class="card" style="flex:1;min-width:380px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><b>baterie</b>
+          <div style="width:160px;height:26px;border:2px solid #333;border-radius:5px;position:relative"><div id="batbar" style="height:100%;background:#59C059;width:40%"></div></div>
+          <span id="batv" style="font-size:24px;font-weight:700;color:#FF8C1A">40 %</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px"><button class="btn" id="krok">Další kolo ▶</button><button class="btn ghost" id="znovu">↺ Znovu</button></div>
+        <table style="width:100%;border-collapse:collapse;font-size:16px"><thead><tr style="text-align:left;border-bottom:2px solid #ccc"><th>kolo</th><th>baterie</th><th>= 100?</th><th>co se stane</th></tr></thead><tbody id="tb"></tbody></table>
+        <div class="msg" id="dmsg"></div></div></div>
+    <h2>Zkus to</h2>`+DQ.map((x,i)=>`<div class="card q"><div><b>${i+1}.</b> ${x.q}</div>
+      <div class="opts">${x.o.map((o,j)=>`<button class="opt" data-q="${i}" data-o="${j}">${o}</button>`).join("")}</div><div class="exp" id="d${i}"></div></div>`).join(""),
+    mount(){ reset(); $("#krok").onclick=krok; $("#znovu").onclick=reset;
+      $("#main").onclick=e=>{ const t=e.target.closest(".opt"); if(!t) return; const i=+t.dataset.q, j=+t.dataset.o, x=DQ[i], ex=$("#d"+i); ex.style.display="block";
+        if(j===x.ok){ t.classList.add("right"); ex.style.color="#1b5e20"; ex.innerHTML="✔ "+x.e; } else { t.classList.add("wrong"); ex.style.color="#b71c1c"; ex.innerHTML="Ne. Zkus to znovu. Pomůže ti tabulka nahoře."; } }; },
+    unmount(){ $("#main").onclick=null; } }; }
+
+/* ---------- jak na Scratch ---------- */
+function editorSVG(){
+  const cats=[["Pohyb","#4C97FF"],["Vzhled","#9966FF"],["Zvuk","#CF63CF"],["Události","#FFBF00"],["Ovládání","#FFAB19"],["Vnímání","#5CB1D6"],["Operátory","#59C059"],["Proměnné","#FF8C1A"]];
+  let s=`<svg viewBox="0 0 900 470" style="width:100%;max-width:900px;font-family:Segoe UI,Arial" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="900" height="40" fill="#855CD6"/><text x="16" y="26" fill="#fff" font-size="16" font-weight="700">Scratch</text>
+  <text x="100" y="26" fill="#fff" font-size="15">Soubor</text><text x="165" y="26" fill="#fff" font-size="15">Upravit</text>
+  <rect x="0" y="40" width="70" height="430" fill="#fff" stroke="#ddd"/>`;
+  cats.forEach(([n,c],i)=>{ s+=`<circle cx="35" cy="${70+i*48}" r="12" fill="${c}"/><text x="35" y="${96+i*48}" font-size="10" text-anchor="middle" fill="#555">${n}</text>`; });
+  s+=`<rect x="22" y="438" width="28" height="24" rx="4" fill="#4C97FF"/><text x="36" y="456" font-size="16" text-anchor="middle" fill="#fff" font-weight="700">+</text>
+  <rect x="70" y="40" width="190" height="430" fill="#f9f9f9" stroke="#ddd"/>
+  <rect x="85" y="70" width="150" height="28" rx="6" fill="#4C97FF"/><text x="95" y="89" font-size="13" fill="#fff">dopředu o 10 kroků</text>
+  <rect x="85" y="108" width="150" height="28" rx="6" fill="#4C97FF"/><text x="95" y="127" font-size="13" fill="#fff">otoč se ↻ o 15 stupňů</text>
+  <rect x="85" y="146" width="150" height="28" rx="6" fill="#4C97FF"/><text x="95" y="165" font-size="13" fill="#fff">skoč na x: 0 y: 0</text>
+  <rect x="260" y="40" width="370" height="430" fill="#fff" stroke="#ddd"/>
+  <rect x="300" y="110" width="150" height="34" rx="12" fill="#FFBF00"/><text x="312" y="132" font-size="13">po kliknutí na ⚑</text>
+  <rect x="300" y="144" width="150" height="28" rx="6" fill="#4C97FF"/><text x="312" y="163" font-size="13" fill="#fff">dopředu o 10 kroků</text>
+  <path d="M204 84 C 250 90, 255 150, 298 158" fill="none" stroke="#C8102E" stroke-width="3" stroke-dasharray="6 5" marker-end="url(#ar)"/>
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#C8102E"/></marker></defs>
+  <rect x="630" y="40" width="270" height="430" fill="#e9f1fc" stroke="#ddd"/>
+  <circle cx="660" cy="62" r="11" fill="#4CAF50"/><text x="660" y="67" font-size="13" text-anchor="middle" fill="#fff">⚑</text>
+  <circle cx="690" cy="62" r="11" fill="#E53935"/><rect x="685" y="57" width="10" height="10" fill="#fff"/>
+  <rect x="645" y="82" width="240" height="180" fill="#fff" stroke="#bbb"/><text x="765" y="180" font-size="40" text-anchor="middle">🐱</text>
+  <rect x="645" y="275" width="240" height="185" fill="#fff" stroke="#bbb"/><text x="655" y="297" font-size="13" fill="#555">Postavy</text>
+  <rect x="660" y="310" width="60" height="60" rx="8" fill="#eef1f8" stroke="#855CD6" stroke-width="2"/><text x="690" y="350" font-size="30" text-anchor="middle">🐱</text>
+  <circle cx="855" cy="430" r="18" fill="#855CD6"/><text x="855" y="437" font-size="20" text-anchor="middle" fill="#fff">+</text>`;
+  const tag=(x,y,n)=>`<circle cx="${x}" cy="${y}" r="15" fill="#C8102E"/><text x="${x}" y="${y+6}" font-size="17" font-weight="700" text-anchor="middle" fill="#fff">${n}</text>`;
+  s+=tag(55,50,1)+tag(245,58,2)+tag(615,58,3)+tag(870,100,4)+tag(720,60,5)+tag(62,452,6)+tag(820,430,7)+`</svg>`;
+  return s;
+}
+function coordSVG(){
+  return `<svg viewBox="0 0 560 420" style="width:100%;max-width:560px;font-family:Segoe UI,Arial" xmlns="http://www.w3.org/2000/svg">
+  <rect x="40" y="30" width="480" height="360" fill="#fff" stroke="#888" stroke-width="2"/>
+  <line x1="40" y1="210" x2="520" y2="210" stroke="#999" stroke-width="2"/><line x1="280" y1="30" x2="280" y2="390" stroke="#999" stroke-width="2"/>
+  <text x="44" y="230" font-size="15" fill="#555">x: -240</text><text x="470" y="230" font-size="15" fill="#555">x: 240</text>
+  <text x="286" y="48" font-size="15" fill="#555">y: 180</text><text x="286" y="384" font-size="15" fill="#555">y: -180</text>
+  <text x="528" y="215" font-size="18" font-weight="700" fill="#4C97FF">x →</text><text x="268" y="22" font-size="18" font-weight="700" fill="#4C97FF">↑ y</text>
+  <circle cx="280" cy="210" r="6" fill="#C8102E"/><text x="290" y="200" font-size="15" font-weight="700" fill="#C8102E">x: 0, y: 0 (střed)</text>
+  <text x="130" y="222" font-size="34" text-anchor="middle">🐱</text><text x="130" y="262" font-size="15" font-weight="700" text-anchor="middle" fill="#1A2D5C">x: -150, y: 0</text>
+  <text x="430" y="120" font-size="15" font-weight="700" text-anchor="middle" fill="#1A2D5C">x: 150, y: 90</text><circle cx="430" cy="120" r="0"/>
+  <rect x="424" y="124" width="12" height="12" fill="#1A2D5C"/></svg>`;
+}
+const LI=(n,t)=>`<div class="li"><span class="num">${n}</span><div>${t}</div></div>`;
+const HOW=[
+  {html:()=>`<div class="min">Scratch · asi 2 minuty</div><h1>Otevři Scratch</h1>
+   <div class="card">${LI(1,`Otevři nový panel prohlížeče a napiš <b>scratch.mit.edu</b>.`)}
+   ${LI(2,`Nahoře klikni na <b>Vytvořit</b> (anglicky <i>Create</i>). Otevře se prázdný projekt s kočkou. Přihlašovat se nemusíš.`)}
+   ${LI(3,`Je Scratch anglicky? Nahoře klikni na <b>zeměkouli</b> nebo na <b>Settings → Language</b> a vyber <b>Čeština</b>.`)}
+   ${LI(4,`Tuhle stránku (průvodce) nech otevřenou ve vedlejším panelu. Budeš se sem vracet.`)}</div>`},
+  {html:()=>`<div class="min">Scratch · asi 2 minuty</div><h1>Co je kde</h1>${editorSVG()}
+   <div class="card">${LI(1,`<b>Kategorie</b> – barevná kolečka. Klikneš a ukážou se bloky té barvy.`)}
+   ${LI(2,`<b>Bloky</b> – chytni blok myší a <b>přetáhni</b> ho doprostřed.`)}
+   ${LI(3,`<b>Plocha pro skript</b> – tady skládáš. Pustíš-li blok těsně pod jiný, <b>cvakne</b> se k němu. Blok smažeš tak, že ho přetáhneš zpátky doleva.`)}
+   ${LI(4,`<b>Scéna</b> – tady se kočka hýbe.`)}
+   ${LI(5,`<b>Zelená vlajka</b> spustí program, <b>červené tlačítko</b> ho zastaví.`)}
+   ${LI(6,`<b>Rozšíření</b> (modré tlačítko s plusem úplně vlevo dole) – tady najdeš <b>Pero</b> na kreslení.`)}
+   ${LI(7,`<b>Nová postava</b> – kulaté tlačítko vpravo dole (třeba míček Ball).`)}</div>`},
+  {html:()=>`<div class="min">Scratch · asi 1 minuta</div><h1>Scéna má souřadnice</h1>
+   <p class="lead">Každé místo na scéně má dvě čísla: <b>x</b> (doleva, doprava) a <b>y</b> (dolů, nahoru). Uprostřed je 0, 0.</p>
+   <div class="wrap"><div style="flex:1;min-width:380px">${coordSVG()}</div>
+   <div class="card" style="flex:1;min-width:300px">${LI("x","Záporné x = vlevo, kladné x = vpravo.")}${LI("y","Záporné y = dole, kladné y = nahoře.")}
+   ${LI("↻",`Směr: ${chip("pohyb","nastav směr 90")} = kočka kouká doprava. 0 = nahoru, 180 = dolů, -90 = doleva.`)}
+   ${LI("!",`Proto každý program začíná ${chip("pohyb","skoč na x: … y: …")} – kočka pak startuje vždycky ze stejného místa.`)}</div></div>`}
+];
+
+/* ---------- úlohy ve Scratchi: základy navázané na ukázky (24. 11. 2026) ---------- */
+const U=[
+  {n:"Kočka řekne Ahoj",hv:1,kat:["udalosti","vzhled","pohyb"], z:"Tohle jsi skládal(a) v ukázkách jako spojovačku 1. Teď to samé ve Scratchi.",
+   zad:"Po kliknutí na zelenou vlajku kočka řekne „Ahoj!“ a pak popojde dopředu.",
+   kroky:["Klikni na žluté kolečko Události a přetáhni doprostřed blok {udalosti:po kliknutí na ⚑}.",
+     "Klikni na fialové kolečko Vzhled a přetáhni {vzhled:bublina Ahoj! 2 sekund}. Pusť ji těsně pod žlutý blok – cvakne k němu.",
+     "Klikni na modré kolečko Pohyb a přidej pod bublinu {pohyb:dopředu o 10 kroků}. Do okénka napiš místo 10 číslo 100.",
+     "Klikni na zelenou vlajku nad scénou."],
+   ok:"Kočka řekne Ahoj! a popojde doprava.", bonus:"Přidej druhou bublinu „Jdu dál.“ a ještě jeden krok dopředu.",
+   tip:"Blok chytíš myší a táhneš. Když ho pustíš těsně pod jiný blok, cvakne se k němu. Spletl(a) ses? Přetáhni blok zpátky doleva a zmizí. Číslo v bílém okénku přepíšeš: klikni do něj a napiš nové.",
+   res:[[0,"udalosti","po kliknutí na ⚑"],[0,"vzhled","bublina Ahoj! 2 sekund"],[0,"pohyb","dopředu o 100 kroků"]]},
+  {n:"Kočka se představí",hv:2,kat:["udalosti","pohyb","vzhled","ovladani"], z:"Tohle je spojovačka 2 z ukázek.",
+   zad:"Kočka skočí na start vlevo, řekne „Ahoj!“, přejde doprava, chvilku počká a couvne zpátky na start.",
+   kroky:["Nový skript, nebo ten z úlohy 1 uprav: nahoře {udalosti:po kliknutí na ⚑}.","Start: {pohyb:skoč na x: -150 y: 0} a {pohyb:nastav směr 90}.",
+     "{vzhled:bublina Ahoj! 2 sekund}.","{pohyb:dopředu o 150 kroků} a {ovladani:čekej 1 sekund}.","Na konec {pohyb:dopředu o -150 kroků} – mínus znamená couvni."],
+   ok:"Kočka začíná pokaždé vlevo, i když ji předtím myší přetáhneš jinam.", bonus:"Přidej na konec druhou bublinu: „Zase doma.“",
+   tip:"Bloky skoč na x: y: a nastav směr najdeš v modrém Pohybu nahoře. „Čekej“ je v oranžovém Ovládání. Čísla v okénkách přepiš.",
+   res:[[0,"udalosti","po kliknutí na ⚑"],[0,"pohyb","skoč na x: -150 y: 0"],[0,"pohyb","nastav směr 90"],[0,"vzhled","bublina Ahoj! 2 sekund"],
+     [0,"pohyb","dopředu o 150 kroků"],[0,"ovladani","čekej 1 sekund"],[0,"pohyb","dopředu o -150 kroků"]]},
+  {n:"Kočka ke kraji (opakuj dokud)",hv:3,kat:["udalosti","pohyb","ovladani","vnimani","vzhled"], z:"Tohle je příklad na „dokud“ z ukázek.",
+   zad:"Kočka jde doprava, dokud nenarazí na okraj scény. Pak řekne „Jsem na kraji!“.",
+   kroky:["{udalosti:po kliknutí na ⚑}, pak {pohyb:skoč na x: -180 y: 0} a {pohyb:nastav směr 90}.",
+     "Z oranžového Ovládání přidej {ovladani:opakuj dokud nenastane}.",
+     "Ze světle modrého Vnímání vezmi {vnimani:dotýkáš se ukazatele myši?} a vlož ho do šestihranného okénka v opakování. Pak klikni na šipku v bloku a vyber okraje → {vnimani:dotýkáš se okraje?}.",
+     "Dovnitř opakování: {pohyb:dopředu o 10 kroků}.","Pod opakování: {vzhled:bublina Jsem na kraji! 2 sekund}."],
+   ok:"Kočka dojde k pravému okraji, zastaví se a promluví.", bonus:"Zkus místo 10 kroků jen 2. Co se změní?",
+   tip:"Opakování „dokud nenastane“ má šestihranné okénko. Vejde se do něj jen šestihranný blok, třeba „dotýkáš se …?“. Bloky dovnitř opakování pusť tak, aby je oranžová čelist objala.",
+   res:[[0,"udalosti","po kliknutí na ⚑"],[0,"pohyb","skoč na x: -180 y: 0"],[0,"pohyb","nastav směr 90"],[0,"ovladani","opakuj dokud nenastane ⟨dotýkáš se okraje?⟩"],
+     [1,"pohyb","dopředu o 10 kroků"],[0,"vzhled","bublina Jsem na kraji! 2 sekund"],[null,null,"Bonus: se 2 kroky jde pomaleji, po malých kouscích."]]},
+  {n:"Tam a zpátky (pro rychlé)",hv:4,kat:["udalosti","pohyb","ovladani","vnimani","vzhled"], z:"Jen když máš úlohy 1–3 hotové.",
+   zad:"Kočka dojde k pravému okraji, otočí se a dojde k levému okraji.",
+   kroky:["Skript z úlohy 3 nemaž, jen ho prodluž. Hned pod {udalosti:po kliknutí na ⚑} přidej {pohyb:nastav otáčení vlevo-vpravo}, ať kočka nechodí vzhůru nohama.",
+     "Pod bublinu přidej {pohyb:nastav směr -90} a {pohyb:dopředu o 30 kroků}.",
+     "Pak druhé {ovladani:opakuj dokud nenastane} s podmínkou {vnimani:dotýkáš se okraje?} a dovnitř {pohyb:dopředu o 10 kroků}.",
+     "Na konec {vzhled:bublina A jsem na druhém kraji! 2 sekund}."],
+   ok:"Kočka dojde doprava, promluví, otočí se a dojde až k levému okraji.",
+   bonus:"Vyhoď blok {pohyb:dopředu o 30 kroků} a spusť znovu. Proč kočka nikam nejde?",
+   tip:"Blok „nastav otáčení vlevo-vpravo“ je v modrém Pohybu úplně dole.",
+   res:[[0,"udalosti","po kliknutí na ⚑"],[0,"pohyb","nastav otáčení vlevo-vpravo"],[0,"pohyb","skoč na x: -180 y: 0"],[0,"pohyb","nastav směr 90"],
+     [0,"ovladani","opakuj dokud nenastane ⟨dotýkáš se okraje?⟩"],[1,"pohyb","dopředu o 10 kroků"],[0,"vzhled","bublina Jsem na kraji! 2 sekund"],
+     [0,"pohyb","nastav směr -90"],[0,"pohyb","dopředu o 30 kroků"],[0,"ovladani","opakuj dokud nenastane ⟨dotýkáš se okraje?⟩"],[1,"pohyb","dopředu o 10 kroků"],
+     [0,"vzhled","bublina A jsem na druhém kraji! 2 sekund"],
+     [null,null,"Bonus: bez 30 kroků kočka pořád stojí u okraje. Podmínka platí hned, takže se druhé opakování provede 0krát."]]}
+];
+function diagram(kind){
+  const box=(x,y,w,t)=>`<rect x="${x-w/2}" y="${y-17}" width="${w}" height="34" fill="#fff" stroke="#333" stroke-width="2"/><text x="${x}" y="${y+6}" text-anchor="middle" font-size="15">${t}</text>`;
+  const oval=(x,y,t)=>`<rect x="${x-50}" y="${y-14}" width="100" height="28" rx="14" fill="#fff" stroke="#333" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="14" font-weight="700">${t}</text>`;
+  const dia=(x,y,t)=>`<polygon points="${x},${y-28} ${x+75},${y} ${x},${y+28} ${x-75},${y}" fill="#fff" stroke="#333" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" font-weight="700">${t}</text>`;
+  const ar=p=>`<polyline points="${p}" fill="none" stroke="#333" stroke-width="2" marker-end="url(#m)"/>`;
+  const lab=(x,y,t)=>`<text x="${x}" y="${y}" font-size="13" font-weight="700" fill="#444">${t}</text>`;
+  const head=`<svg viewBox="0 0 360 340" style="width:300px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#333"/></marker></defs>`;
+  if(kind==="hadani") return head+oval(110,22,"START")+ar("110,36 110,53")+box(110,70,170,"Myslím si číslo")+ar("110,87 110,108")+box(110,125,170,"Zeptám se")
+    +ar("110,142 110,167")+dia(110,195,"Uhodl?")+ar("185,195 245,195")+lab(189,188,"ne")+box(300,195,110,"Řeknu Vedle!")+ar("300,178 300,125 197,125")
+    +ar("110,223 110,253")+lab(116,238,"ano")+box(110,270,170,"Řeknu Trefa!")+ar("110,287 110,304")+oval(110,318,"KONEC")+`</svg>`;
+  return head+oval(110,22,"START")+ar("110,36 110,53")+box(115,70,210,"Napustím a zapnu konvici")+ar("110,87 110,167")+dia(110,195,"Vře voda?")+ar("185,195 245,195")
+    +lab(189,188,"ne")+box(300,195,110,"Počkám minutu")+ar("300,178 300,125 110,125")+ar("110,223 110,253")+lab(116,238,"ano")+box(110,270,190,"Zaliju čaj")
+    +ar("110,287 110,304")+oval(110,318,"KONEC")+`</svg>`;
+}
+function Task(i){ const u=U[i], n=i+1;
+  const hv=`<span class="hv">${"★".repeat(u.hv)}<span>${"★".repeat(5-u.hv)}</span></span>`;
+  const kat=u.kat.map(k=>`<span class="kat" style="background:${KAT[k][1]};color:${KAT[k][2]}">${KAT[k][0]}</span>`).join("");
+  const kroky=`<ol class="kroky">${u.kroky.map(s=>`<li>${md(s)}</li>`).join("")}</ol>`;
+  const res=u.res.map(([ind,k,t])=>k?`<div class="r" style="margin-left:${ind*28}px">${chip(k,t)}</div>`:`<div class="note">${esc(t)}</div>`).join("");
+  return { html:`<div class="min">ve Scratchi · úloha ${n} z ${U.length}</div>${u.z?`<p class="help" style="margin:0 0 8px">${u.z}</p>`:""}
+    <div class="card"><div class="uh"><h1 style="margin:0">Úloha ${n} · ${u.n}</h1>${hv}</div><div style="margin:6px 0">${kat}</div>
+    <p><b>Zadání:</b> ${u.zad}</p>${u.diag?`<div class="wrap">${kroky}<div>${diagram(u.diag)}</div></div>`:kroky}
+    <p class="ok"><b>Hotovo, když:</b> ${u.ok}</p><p class="bonus"><b>Bonus:</b> ${md(u.bonus)}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="bt">💡 Nevím, kde co je</button><button class="btn ghost" id="bs">Ukázat hotový skript</button></div>
+    <div class="tip" id="tip">${u.tip}</div><div class="sol" id="sol"><b>Hotový skript</b> (odsazené bloky patří dovnitř opakování nebo podmínky):${res}</div>
+    <div class="donebox"><label><input type="checkbox" id="cd"> Úloha ${n} funguje</label><label><input type="checkbox" id="cb"> Bonus taky</label></div></div>`,
+    mount(){ $("#bt").onclick=()=>{ const t=$("#tip"); t.style.display=t.style.display==="block"?"none":"block"; };
+      let ask=false;
+      $("#bs").onclick=()=>{ const s=$("#sol"), btn=$("#bs"); if(s.style.display==="block"){ s.style.display="none"; btn.textContent="Ukázat hotový skript"; ask=false; return; }
+        if(!ask){ ask=true; btn.textContent="Opravdu? Nejdřív zkus 💡. Klikni znovu."; return; }
+        s.style.display="block"; btn.textContent="Skrýt hotový skript"; };
+      $("#cd").checked=!!S.done[n]; $("#cb").checked=!!S.bonus[n];
+      $("#cd").onchange=e=>{ S.done[n]=e.target.checked; save(); if(e.target.checked) $("#next").classList.add("pulse"); };
+      $("#cb").onchange=e=>{ S.bonus[n]=e.target.checked; save(); }; } }; }
+
+/* ---------- úvod a konec ---------- */
+/* CAST: "ukazky" = index.html (spojovačky + opakuj dokud), "ulohy" = ulohy.html (Umíme to, Scratch, odevzdání) */
+const CAST="ukazky";
+const IntroUkazky={ html:`<h1>Scratch – ukázky</h1><p class="lead">Dnes se naučíš skládat program z bloků a opakování <b>dokud</b>. Postupuj krok za krokem tlačítkem <b>Další</b> dole vpravo.</p>
+  <div class="card">${LI("A","<b>Spojovačky</b> (8 minut) – poskládáš bloky tady na stránce a uvidíš, co kočka udělá. První je úplně jednoduchá.")}
+  ${LI("B","<b>Opakuj dokud</b> (9 minut) – vysvětlení, ukázka a jeden příklad na skládání.")}</div>
+  <p class="help">Když nevíš, klikni na tlačítko 💡 Nápověda. Nápovědy se odkrývají postupně, jedna po druhé.</p>`, mount(){} };
+const EndUkazky={ html:`<h1>Ukázky máš hotové ✔</h1><p class="lead">Umíš poskládat program z bloků a víš, jak funguje <b>opakuj dokud nenastane</b>. Teď půjdeš na <b>Umíme to</b> – odkaz najdeš v Google učebně.</p>
+  <div class="card" style="border-left:6px solid #C8102E"><b>Pozor: Umíme to píše „dokud“ obráceně než Scratch.</b>
+   <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:17px">
+   <tr style="text-align:left;border-bottom:2px solid #ccc"><th style="padding:4px">Umíme to</th><th style="padding:4px">Scratch</th></tr>
+   <tr><td style="padding:6px 4px"><b>dokud ≤ 3</b> · přičti 3</td><td style="padding:6px 4px">${b("ovladani","opakuj dokud nenastane ⟨…⟩")}</td></tr>
+   <tr><td style="padding:6px 4px">Opakuje, dokud podmínka <b>platí</b>.<br>Skončí, když <b>přestane</b> platit.</td>
+       <td style="padding:6px 4px">Opakuje, dokud podmínka <b>neplatí</b>.<br>Skončí, když <b>začne</b> platit.</td></tr>
+   <tr><td style="padding:6px 4px">dokud baterie &lt; 100 → nabíjej</td><td style="padding:6px 4px">opakuj dokud nenastane baterie = 100 → nabíjej</td></tr>
+   </table><p style="margin:8px 0 0">Poslední řádek dělá v obou případech totéž: nabíjí, dokud není plno.</p></div>
+  <p class="help">Chceš si něco zopakovat? Tlačítkem Zpět se vrátíš ke každé skládačce.</p>`, mount(){} };
+const IntroUlohy={ html:`<h1>Scratch – první programy</h1><p class="lead">Ukázky a Umíme to máš za sebou. Teď poskládáš stejné programy ve skutečném Scratchi. Postupuj tlačítkem <b>Další</b>.</p>
+  <div class="card">${LI("A","<b>Jak na Scratch</b> (4 minuty) – kde co ve Scratchi najdeš.")}
+  ${LI("B","<b>Úlohy</b> – stejné programy jako v ukázkách: Ahoj, představení, ke kraji. Začni od jedničky. Kolik stihneš, tolik stačí.")}
+  ${LI("C","<b>Odevzdání</b> (4 minuty před koncem) – uložíš projekt a odevzdáš ho v Google učebně.")}</div>
+  <p class="help">Když se zasekneš, u každé úlohy je tlačítko 💡 s nápovědou. Teprve když to opravdu nejde, podívej se na hotový skript.</p>`, mount(){} };
+const End={ get html(){ const all=U.map((_,i)=>i+1), d=all.filter(n=>S.done[n]), bo=all.filter(n=>S.bonus[n]);
+  const sum=d.length?`Hotové úlohy: ${d.join(", ")}${bo.length?" · bonus: "+bo.join(", "):""}`:"Zatím žádná úloha označená jako hotová.";
+  return `<div class="min">4 minuty před koncem hodiny</div><h1>Ulož a odevzdej</h1>
+  <div class="card">${LI(1,"Ve Scratchi nahoře klikni na <b>Soubor → Uložit do svého počítače</b>. Soubor <b>.sb3</b> se uloží do složky <b>Stažené soubory</b> (když se Chrome zeptá kam, ulož ho tam).")}
+  ${LI(2,"Otevři <b>Google učebnu</b> a v ní úkol <b>Scratch – první programy</b>.")}
+  ${LI(3,"Klikni na <b>Přidat nebo vytvořit → Soubor</b> a vyber uložený soubor .sb3.")}
+  ${LI(4,"Do <b>soukromého komentáře</b> opiš, kam jsi došel (došla):")}
+  <div style="margin:4px 0 10px 38px"><span class="summary">${sum}</span></div>
+  ${LI(5,"Klikni na <b>Odevzdat</b>.")}</div>
+  <p class="help">Zbývá čas? Vrať se k úloze, kterou jsi nedodělal(a), nebo zkus bonus. Tlačítkem Zpět se dostaneš ke každé úloze.</p>`; }, mount(){} };
+
+/* ---------- obrazovky ---------- */
+const PLAN={
+  ukazky:{secs:["Start","A · Spojovačky","B · Opakuj dokud","Hotovo"], screens:[
+    {sec:0,make:()=>IntroUkazky},
+    {sec:1,make:()=>Puzzle("s0")},{sec:1,make:()=>Puzzle("a1")},{sec:1,make:()=>Puzzle("a2")},
+    {sec:2,make:Dokud},{sec:2,make:()=>Puzzle("a3")},
+    {sec:3,make:()=>EndUkazky}]},
+  ulohy:{secs:["Start","A · Jak na Scratch","B · Úlohy","C · Odevzdání"], screens:[
+    {sec:0,make:()=>IntroUlohy},
+    {sec:1,make:()=>({html:HOW[0].html(),mount(){}})},{sec:1,make:()=>({html:HOW[1].html(),mount(){}})},{sec:1,make:()=>({html:HOW[2].html(),mount(){}})},
+    {sec:2,make:()=>Task(0)},{sec:2,make:()=>Task(1)},{sec:2,make:()=>Task(2)},{sec:2,make:()=>Task(3)},
+    {sec:3,make:()=>End}]}
+};
+const SCREENS=PLAN[CAST].screens, SECS=PLAN[CAST].secs;
+let cur=null;
+function show(i){ if(cur&&cur.unmount) cur.unmount(); S.screen=Math.max(0,Math.min(SCREENS.length-1,i)); save();
+  const sc=SCREENS[S.screen]; cur=sc.make(); $("#main").innerHTML=cur.html; cur.mount&&cur.mount();
+  $("#steps").innerHTML=SECS.map((s,k)=>`<span class="${k===sc.sec?"on":(k<sc.sec?"ok":"")}">${s}</span>`).join("");
+  $("#pos").textContent=`${S.screen+1} / ${SCREENS.length}`;
+  $("#prev").disabled=S.screen===0; $("#next").disabled=S.screen===SCREENS.length-1; $("#next").classList.remove("pulse");
+  $("#next").textContent = S.screen===0 ? "Začít →" : "Další →"; window.scrollTo(0,0); }
+$("#prev").onclick=()=>show(S.screen-1); $("#next").onclick=()=>show(S.screen+1);
+show(S.screen||0);
+</script>
+</body>
+</html>
