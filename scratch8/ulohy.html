@@ -522,9 +522,9 @@ function mountNula(){ const x=$("#nula"); if(x) x.onclick=()=>{ try{ localStorag
 const IntroUkazky={ html:`<h1>Scratch – ukázky</h1><p class="lead">Dnes se naučíš skládat program z bloků a opakování <b>dokud</b>. Postupuj krok za krokem tlačítkem <b>Další</b> dole vpravo.</p>
   <div class="card">${LI("A","<b>Spojovačky</b> (5 minut) – poskládáš bloky tady na stránce a uvidíš, co kočka udělá. První je úplně jednoduchá.")}
   ${LI("B","<b>Opakuj dokud</b> (7 minut) – vysvětlení, ukázka a jeden příklad na skládání.")}
-  ${LI("✔","<b>Odevzdání části 1</b> – na konci si stáhneš potvrzení se svým příjmením a odevzdáš ho v Google učebně do úkolu <b>1 Ukázky</b>.")}</div>
+  ${LI("✔","<b>Potvrzení části 1</b> – na konci si stáhneš potvrzení se svým příjmením a přiložíš ho k zadání dnešní hodiny v Google učebně.")}</div>
   <p class="help">Když nevíš, klikni na tlačítko 💡 Nápověda. Nápovědy se odkrývají postupně, jedna po druhé.</p>
-  <div class="card" style="border-left:6px solid #C8102E"><b>Ve 30. minutě hodiny jdeš na Scratch, ať jsi kdekoli.</b> Nemáš hotovo? Tlačítkem Další dojdi na <b>Odevzdání 1</b>, stáhni potvrzení, odevzdej ho a otevři v Google učebně úkol <b>3 Scratch</b>.</div>${nulaBtn}`, mount(){ mountNula(); } };
+  <div class="card" style="border-left:6px solid #C8102E"><b>Ve 30. minutě hodiny jdeš na Scratch, ať jsi kdekoli.</b> Nemáš hotovo? Tlačítkem Další dojdi na <b>Odevzdání 1</b>, stáhni potvrzení, přilož ho k zadání hodiny a otevři odkaz na Scratch (bod 3 v zadání).</div>${nulaBtn}`, mount(){ mountNula(); } };
 /* jméno žáka zůstává jen v jeho prohlížeči (localStorage), nikam se neposílá */
 const JM="scratch8d-jmeno";
 function getJm(){ try{ return localStorage.getItem(JM)||window._jm||""; }catch(e){ return window._jm||""; } }
@@ -545,11 +545,11 @@ function drawCert(c){ const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect
   let y=215; g.font="24px Segoe UI, Arial";
   for(const [k,t] of PUZ_LIST){ const ok=!!S.solved[k]; g.fillStyle=ok?"#2e7d32":"#b71c1c"; g.fillText(ok?"✔":"✖",28,y); g.fillStyle="#1d1d1f"; g.fillText(t+(ok?"":" – nevyřešeno"),62,y); y+=38; }
   const q=["dq0","dq1"].filter(k=>S.solved[k]).length; g.fillStyle=q===2?"#2e7d32":"#b71c1c"; g.fillText(q===2?"✔":"✖",28,y); g.fillStyle="#1d1d1f"; g.fillText(`Otázky k „opakuj dokud“: ${q} ze 2`,62,y); }
-const Odevzdej1={ get html(){ return `<div class="min">odevzdání části 1 · asi 1 minuta</div><h1>Ukázky máš za sebou – odevzdej je</h1>
+const Odevzdej1={ get html(){ return `<div class="min">potvrzení části 1 · asi 1 minuta</div><h1>Ukázky máš za sebou – přilož potvrzení</h1>
   <div class="card">${LI(1,"Napiš své příjmení. Do názvu souboru se samo napíše bez háčků a čárek.")}${nameBox()}
   ${LI(2,`Klikni na tlačítko. Soubor ${fn(1,".png")} se uloží do složky <b>Stažené soubory</b>.`)}
   <div style="margin:6px 0 12px 38px"><button class="btn green" id="dl">⬇ Stáhnout potvrzení</button> <span id="dlmsg" class="help"></span></div>
-  ${LI(3,`V Google učebně otevři úkol <b>1 Ukázky</b> → <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(1,".png")} → <b>Odevzdat</b>.`)}</div>
+  ${LI(3,`V Google učebně otevři zadání dnešní hodiny → <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(1,".png")}. <b>Na Odevzdat zatím neklikej</b> – odevzdáváš až na konci hodiny.`)}</div>
   <p class="help">Takhle vypadá tvoje potvrzení. Červený křížek = skládačka, kterou jsi nevyřešil(a). Můžeš se k ní vrátit tlačítkem Zpět a stáhnout potvrzení znovu.</p>
   <canvas id="cert" width="900" height="420" style="max-width:600px"></canvas>`; },
   mount(){ const c=$("#cert"); drawCert(c); mountName(()=>drawCert(c));
@@ -557,7 +557,7 @@ const Odevzdej1={ get html(){ return `<div class="min">odevzdání části 1 · 
       $("#dlmsg").textContent="Ukládám…"; drawCert(c); c.toBlob(bl=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(bl); a.download=fname(1)+".png"; document.body.appendChild(a); a.click(); a.remove();
         $("#dlmsg").textContent="Staženo: "+fname(1)+".png"; $("#next").classList.add("pulse"); },"image/png"); }; } };
 const Umime2={ get html(){ return `<div class="min">část 2 · Umíme to · asi 8 minut</div><h1>Část 2: Umíme to</h1>
-  <p class="lead">V Google učebně otevři úkol <b>2 Umíme to</b> a v něm odkaz na nástěnku. Udělej obě cvičení: <b>Opakuj dokud</b> a <b>Vláček: opakuj dokud</b>.<br><b>Ve 30. minutě hodiny skonči, ať jsi kdekoli:</b> udělej snímek toho, co máš, odevzdej ho a jdi na úkol <b>3 Scratch</b>.</p>
+  <p class="lead">V zadání hodiny v Google učebně otevři odkaz na nástěnku (bod 2). Udělej obě cvičení: <b>Opakuj dokud</b> a <b>Vláček: opakuj dokud</b>. <b>Z téhle části nic neodevzdáváš.</b><br><b>Ve 30. minutě hodiny skonči, ať jsi kdekoli,</b> a otevři odkaz na Scratch (bod 3 v zadání).</p>
   <div class="card" style="border-left:6px solid #C8102E"><b>Pozor: Umíme to píše „dokud“ obráceně než Scratch.</b>
    <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:17px">
    <tr style="text-align:left;border-bottom:2px solid #ccc"><th style="padding:4px">Umíme to</th><th style="padding:4px">Scratch</th></tr>
@@ -566,17 +566,11 @@ const Umime2={ get html(){ return `<div class="min">část 2 · Umíme to · asi
        <td style="padding:6px 4px">Opakuje, dokud podmínka <b>neplatí</b>.<br>Skončí, když <b>začne</b> platit.</td></tr>
    <tr><td style="padding:6px 4px">dokud baterie &lt; 100 → nabíjej</td><td style="padding:6px 4px">opakuj dokud nenastane baterie = 100 → nabíjej</td></tr>
    </table><p style="margin:8px 0 0">Ve Scratchi napíšeš <b>opačnou podmínku</b>: místo ≤ 3 dáš > 3. Poslední řádek tak dělá v obou případech totéž: nabíjí, dokud není plno.</p></div>
-  <div class="card"><b>Jak odevzdat část 2</b>
-  ${LI(1,"Na konci <b>každého</b> cvičení, když vidíš výsledek, stiskni naráz <b>Windows + Shift + S</b> a myší označ výsledek.")}
-  ${LI(2,"Hned vpravo dole klikni na oznámení. Otevře se okno <b>Výstřižky</b>.")}
-  ${LI(3,`Stiskni <b>Ctrl + S</b>, jako název napiš ${fn("2a")} (po druhém cvičení ${fn("2b")}) a klikni na <b>Uložit</b>. Zapamatuj si složku (obvykle <b>Obrázky</b>).`)}
-  ${LI("?",`Oznámení zmizelo? Stiskni <b>Windows + PrtScn</b>. Celá obrazovka se uloží do <b>Obrázky → Snímky obrazovky</b>. Ten soubor přejmenuj (klikni na něj, <b>F2</b>) na ${fn("2a")} nebo ${fn("2b")}.`)}
-  ${LI(4,`V Google učebně v úkolu <b>2 Umíme to</b>: <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn("2a",".png")} a ${fn("2b",".png")} → <b>Odevzdat</b>.`)}
-  ${LI(5,"Pak otevři úkol <b>3 Scratch</b>. Tam pokračuješ.")}</div>`; }, mount(){} };
-const IntroUlohy={ html:`<div class="min">část 3</div><h1>Scratch – první programy</h1><p class="lead">Ukázky (část 1) a Umíme to (část 2) máš odevzdané. Teď poskládáš stejné programy ve skutečném Scratchi. Postupuj tlačítkem <b>Další</b>.<br>Sem jdeš nejpozději ve 30. minutě hodiny, i když části 1 a 2 nemáš celé.</p>
+  <div class="card">${LI("→","Hotovo s oběma cvičeními (nebo je 30. minuta)? Otevři odkaz na <b>Scratch</b> – bod 3 v zadání hodiny. Tam pokračuješ.")}</div>`; }, mount(){} };
+const IntroUlohy={ html:`<div class="min">část 3</div><h1>Scratch – první programy</h1><p class="lead">Ukázky (část 1) a Umíme to (část 2) máš za sebou. Teď poskládáš stejné programy ve skutečném Scratchi. Postupuj tlačítkem <b>Další</b>.<br>Sem jdeš nejpozději ve 30. minutě hodiny, i když části 1 a 2 nemáš celé.</p>
   <div class="card">${LI("A","<b>Jak na Scratch</b> (3 minuty) – kde co ve Scratchi najdeš.")}
   ${LI("B","<b>Úlohy</b> – stejné programy jako v ukázkách: Ahoj, představení, ke kraji. Začni od jedničky. Kolik stihneš, tolik stačí.")}
-  ${LI("C","<b>Odevzdání</b> (4 minuty před koncem) – uložíš projekt a odevzdáš ho v Google učebně do úkolu <b>3 Scratch</b>.")}</div>
+  ${LI("C","<b>Odevzdání</b> (4 minuty před koncem) – uložíš projekt, přiložíš ho k zadání hodiny v Google učebně a klikneš na <b>Odevzdat</b>.")}</div>
   <p class="help">Když se zasekneš, u každé úlohy je tlačítko 💡 s nápovědou. Teprve když to opravdu nejde, podívej se na hotový skript.</p>${nulaBtn}`, mount(){ mountNula(); } };
 const End={ get html(){ const all=U.map((_,i)=>i+1), d=all.filter(n=>S.done[n]), bo=all.filter(n=>S.bonus[n]);
   const sum=d.length?`Hotové úlohy: ${d.join(", ")}${bo.length?" · bonus: "+bo.join(", "):""}`:"Zatím žádná úloha označená jako hotová.";
@@ -584,7 +578,7 @@ const End={ get html(){ const all=U.map((_,i)=>i+1), d=all.filter(n=>S.done[n]),
   <div class="card">${LI(1,"Napiš své příjmení (stejně jako u části 1):")}${nameBox()}
   ${LI(2,"Ve Scratchi nahoře klikni na <b>Soubor → Ulož do svého počítače</b>.")}
   ${LI(3,`Objeví se okno s názvem? Napiš ${fn(3)} a klikni na <b>Uložit</b>.<br>Stáhl se soubor sám (třeba jako <i>Můj projekt.sb3</i>)? V Chrome stiskni <b>Ctrl + J</b> → <b>Zobrazit ve složce</b>, soubor označ, stiskni <b>F2</b> a přepiš název na ${fn(3)}.`)}
-  ${LI(4,`V Google učebně otevři úkol <b>3 Scratch</b> → <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(3,".sb3")}.`)}
+  ${LI(4,`V Google učebně otevři zadání dnešní hodiny → <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(3,".sb3")}. (Potvrzení ${fn(1,".png")} by tam už mělo být z ukázek.)`)}
   ${LI(5,"Do <b>soukromého komentáře</b> opiš, kam jsi došel (došla):")}
   <div style="margin:4px 0 10px 38px"><span class="summary">${sum}</span></div>
   ${LI(6,"Klikni na <b>Odevzdat</b>.")}</div>
@@ -592,7 +586,7 @@ const End={ get html(){ const all=U.map((_,i)=>i+1), d=all.filter(n=>S.done[n]),
 
 /* ---------- obrazovky ---------- */
 const PLAN={
-  ukazky:{secs:["Start","A · Spojovačky","B · Opakuj dokud","Odevzdání 1","Část 2 · Umíme to"], screens:[
+  ukazky:{secs:["Start","A · Spojovačky","B · Opakuj dokud","Potvrzení","Část 2 · Umíme to"], screens:[
     {sec:0,make:()=>IntroUkazky},
     {sec:1,make:()=>Puzzle("s0")},{sec:1,make:()=>Puzzle("a1")},{sec:1,make:()=>Puzzle("a2")},
     {sec:2,make:Dokud},{sec:2,make:()=>Puzzle("a3")},
