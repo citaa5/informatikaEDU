@@ -45,7 +45,7 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:0;padding:10px 18px
 .pal h3,.ws h3{margin:0 0 6px;font-size:14px;color:#555;font-weight:600}
 .cnt{display:inline-block;background:#1A2D5C;color:#fff;border-radius:10px;padding:0 8px;margin-left:4px}
 .cnt.full{background:#2e9e44}
-.pal .blk{display:flex;width:max-content;margin:0 0 6px;cursor:pointer}
+.pal .blk{display:flex;flex-wrap:wrap;width:max-content;max-width:100%;white-space:normal;margin:0 0 6px;cursor:pointer}
 .pal .blk:hover{filter:brightness(1.08);transform:translateX(3px)}
 .pal .gone{visibility:hidden;height:0;margin:0;padding:0;min-height:0;border:0}
 .ws{background:#f9fafc;background-image:radial-gradient(#dfe3ea 1px,transparent 1px);background-size:18px 18px}
@@ -209,7 +209,10 @@ const PUZ = {
       if(ids[0]!=="h") return "Skript musí začínat žlutým blokem „po kliknutí na ⚑“. Bez něj kočka neví, kdy začít.";
       if(v.some(x=>x.join()===ids.join())) return true;
       let best=0; for(const x of v){ let i=0; while(i<7&&x[i]===ids[i]) i++; best=Math.max(best,i); }
-      return `${best===1?"Blok č. 1 je":`Bloky č. 1 až ${best} jsou`} dobře, blok č. ${best+1} sem nepatří. Spusť vlajku a sleduj, kdy kočka udělá něco jinak než v zadání.`; } },
+      const ok = best===1 ? "První blok máš dobře." : best<5 ? `První ${best} bloky máš dobře.` : `Prvních ${best} bloků máš dobře.`;
+      const ord = ["první","druhý","třetí","čtvrtý","pátý","šestý","sedmý"][best];
+      setTimeout(()=>{ const el=document.querySelector(`#ws [data-ws="${best}"]`); if(el) el.style.outline="3px solid #c62828"; },0);
+      return `${ok} Blok, který je ${ord} shora, sem nepatří – má červený rámeček. Podívej se do kroků nahoře, co má být ${ord}.`; } },
   a2: { title:"Čtverec perem", min:"spojovačka 3 · asi 2 minuty",
     zad:"Poskládej program podle kroků. Použij všechny bloky vlevo.<br><small>Opakování obejme bloky, které do něj přidáš. Až budeš chtít pokračovat <b>pod</b> opakováním, klikni na čárkovaný řádek pod oranžovou čelistí.</small>",
     cil:["po kliknutí na vlajku","smaže starou čmáranici","skočí doprostřed (x: 0, y: 0)","otočí se doprava (směr 90)","zapne pero","4× zopakuje: dopředu 100 kroků a otočit o 90°","vypne pero"],
@@ -228,7 +231,10 @@ const PUZ = {
       const top=tree.map(n=>n.id), r=tree.find(n=>n.id==="r");
       if(!r) return "Opakování musí být ve skriptu samo, ne schované uvnitř jiného bloku.";
       const inside=r.kids.map(n=>n.id).sort().join();
-      if(inside!=="f,t") return "Do opakování patří přesně dva bloky: „dopředu o 100 kroků“ a „otoč se o 90 stupňů“. Ostatní dej mimo opakování.";
+      if(inside!=="f,t"){ const navic=r.kids.map(n=>n.id).filter(id=>id!=="f"&&id!=="t");
+        if(navic.length){ const t=PUZ.a2.blocks[navic[0]].t.replace(/\[|\]/g,"");
+          return `Do opakování patří jen „dopředu o 100 kroků“ a „otoč se o 90 stupňů“. Blok „${t}“ máš uvnitř opakování: klikni na něj (vrátí se vlevo) a klikni na něj znovu – přidá se na konec skriptu, pod opakování.`; }
+        return "Do opakování dej oba bloky: „dopředu o 100 kroků“ i „otoč se o 90 stupňů“. Klikni do oranžové čelisti, ať je tam zelené místo, a pak na blok vlevo."; }
       const iR=top.indexOf("r"), iPd=top.indexOf("pd"), iPu=top.indexOf("pu");
       if(iPd>iR) return "Pero zapni ještě před opakováním – jinak se čtverec nenakreslí celý.";
       if(iPu<iR) return "Pero vypni až za opakováním, když je čtverec hotový.";
@@ -237,7 +243,7 @@ const PUZ = {
       return true; } },
   a3: { title:"Příklad: kočka ke kraji", min:"opakuj dokud · příklad · asi 3 minuty",
     zad:"Nevíme, kolik kroků bude ke kraji – proto ne „opakuj 10 krát“, ale <b>opakuj dokud nenastane</b>. Poskládej program podle kroků, použij všechny bloky.",
-    cil:["po kliknutí na vlajku","skočí na start vlevo (x: -180, y: 0)","otočí se doprava (směr 90)","opakuje krok o 10 kroků, dokud se nedotkne okraje","řekne „Jsem na kraji!“"],
+    cil:["po kliknutí na vlajku","skočí na start vlevo (x: -180, y: 0)","otočí se doprava (směr 90)","opakuje „dopředu o 10 kroků“, dokud se nedotkne okraje","řekne „Jsem na kraji!“"],
     sol:["h","g","d",["u",["f"]],"s"],
     hints:["Nahoře po kliknutí na ⚑, pak skoč na x: -180 y: 0 a nastav směr 90.","Pak opakuj dokud nenastane ⟨dotýkáš se okraje?⟩.",
       "Do opakování dej jen dopředu o 10 kroků. Kočka jde po malých krocích a po každém se zeptá: už jsem u okraje?","Pod opakování dej bublinu Jsem na kraji!"],
@@ -264,7 +270,7 @@ function Puzzle(key){
     const pal=P.order.map(id=>{ const b=P.blocks[id];
       return used.has(id)?`<div class="blk gone"></div>`:blkHTML(b,`data-pal="${id}" title="Klikni – blok se přidá na místo ▶"`); }).join("");
     const total=Object.keys(P.blocks).length, n=used.size;
-    $("#pal").innerHTML=`<h3>Bloky – použij všech ${total}. Klikni a blok se přidá na zelené místo.</h3>${pal||'<p class="help">Všechny bloky jsou ve skriptu. Klikni na Zkontrolovat.</p>'}`;
+    $("#pal").innerHTML=`<h3>Bloky – použij všech ${total}. Klikni a blok se přidá na zelené místo.</h3>${n===total?'<p class="help"><b>Všechny bloky jsou ve skriptu.</b> Klikni na ✔ Zkontrolovat.</p>':pal}`;
     $("#ws").innerHTML=`<h3>Skript <span class="cnt${n===total?" full":""}">${n} z ${total} bloků</span><br>klikni na blok = vrátí se zpátky · klikni na čárkovaný řádek = změníš zelené místo</h3>`+list([],tree);
   }
   function slot(path,i){ const on=act.path.join()===path.join()&&act.i===i;
@@ -295,9 +301,9 @@ function Puzzle(key){
   async function goal(){ stage.stopFlag=true; await stage.sleep(60); stage.reset(); msg("info","👀 Cíl: takhle to má vypadat. Dívej se na kočku – a pak to poskládej sám (sama)."); stage.stopFlag=false;
     $("#goal").disabled=true; await stage.exec(solTree(P.sol)); stage.stopFlag=true; $("#goal").disabled=false; await stage.sleep(900); stage.reset(); }
   function check(){ const r=P.check(tree);
-    if(r===true){ S.solved[key]=true; save(); msg("good","Správně! Klikni na zelenou vlajku a podívej se, jak to kočka udělá. Pak pokračuj tlačítkem Další."); $("#next").classList.add("pulse"); run(); }
+    if(r===true){ S.solved[key]=true; save(); msg("good","Správně! Kočka to teď předvede. Pak pokračuj tlačítkem Další."); $("#next").classList.add("pulse"); run(); }
     else msg("bad",r); }
-  const how=P.how?`<div class="card" style="border-left:6px solid #2e9e44;padding:10px 16px"><b>Jak na to:</b> ① klikni na blok vlevo – přesune se doprostřed do skriptu · ② spletl(a) ses? klikni na blok ve skriptu a vrátí se · ③ klikni na <b>⚑ Spustit</b>, dívej se na kočku a pak klikni na <b>Zkontrolovat</b>.</div>`:"";
+  const how=P.how?`<div class="card" style="border-left:6px solid #2e9e44;padding:10px 16px"><b>Jak na to:</b> ⓪ nevíš, co má kočka dělat? klikni na <b>👀 Cíl</b> · ① klikni na blok vlevo – přesune se doprostřed do skriptu · ② spletl(a) ses? klikni na blok ve skriptu a vrátí se · ③ klikni na <b>⚑ Spustit</b>, dívej se na kočku a pak klikni na <b>Zkontrolovat</b>.</div>`:"";
   const hints=P.hints?`<div style="margin:10px 0 0"><button class="btn ghost" id="hb" style="padding:6px 14px;width:100%">💡 Nápověda</button><ol id="hl" style="margin:6px 0 0 20px;padding:0;font-size:15px"></ol></div>`:"";
   const cil=P.cil?`<div class="cil"><b>Co má kočka udělat:</b> ${P.cil.map((t,i)=>`<span>${"①②③④⑤⑥⑦⑧⑨"[i]} ${t}</span>`).join(" → ")}</div>`:"";
   return { html:`<div class="min">${P.min||"spojovačka · asi 3 minuty"}</div><h1>${P.title}</h1><p class="lead">${P.zad}</p>${cil}${how}
@@ -344,7 +350,7 @@ function Dokud(){
     row.innerHTML=`<td>${kolo}.</td><td>${bat}</td><td style="color:#b71c1c;font-weight:700">ne</td><td>čekej 1 s, změň o 20 → baterie <b>${nb}</b></td>`;
     $("#tb").appendChild(row); bat=nb; $("#batv").textContent=bat+" %"; $("#batbar").style.width=bat+"%"; }
   return { html:`<div class="min">opakuj dokud · vysvětlení a ukázka · asi 4 minuty</div><h1>Opakuj dokud nenastane</h1>
-    <p class="lead">U čtverce víš, kolikrát opakovat: 4 strany = ${chip("ovladani","opakuj 4 krát")}. U nabíjení mobilu to nevíš. Víš jen, <b>kdy přestat</b>: až bude baterie na 100 %. Klikej na <b>Další kolo ▶</b> a sleduj tabulku.</p>
+    <p class="lead">U čtverce víš, kolikrát opakovat: 4 strany = ${chip("ovladani","opakuj 4 krát")}. U nabíjení mobilu to nevíš. Víš jen, <b>kdy přestat</b>: až bude baterie na 100 %. Klikej na <b>Další kolo ▶</b> a sleduj tabulku. <b>Pod ní jsou 2 otázky – sjeď dolů a odpověz.</b></p>
     <div class="card" style="border-left:6px solid #FFAB19"><b>Jak to funguje:</b> Před každým kolem se Scratch podívá na podmínku v zeleném okénku.<br>
       <b style="color:#b71c1c">Neplatí</b> → udělá bloky uvnitř a ptá se znovu. &nbsp; <b style="color:#1b5e20">Platí</b> → opakování skončí a jde se na blok pod ním.<br>
       Je to otázka ve vývojovém diagramu: větev <b>ne</b> se vrací zpátky, větev <b>ano</b> jde dál.</div>
@@ -407,14 +413,14 @@ function coordSVG(){
 const LI=(n,t)=>`<div class="li"><span class="num">${n}</span><div>${t}</div></div>`;
 const HOW=[
   {html:()=>`<div class="min">Scratch · asi 1 minuta</div><h1>Otevři Scratch</h1>
-   <div class="card">${LI(1,`Otevři nový panel prohlížeče a napiš <b>scratch.mit.edu</b>.`)}
-   ${LI(2,`Nahoře klikni na <b>Vytvořit</b> (anglicky <i>Create</i>). Otevře se prázdný projekt s kočkou. Přihlašovat se nemusíš.`)}
+   <div class="card">${LI(1,`Otevři novou kartu (<b>Ctrl + T</b>) a napiš <b>scratch.mit.edu</b>.`)}
+   ${LI(2,`Nahoře klikni na <b>Tvořit</b> (anglicky <i>Create</i>). Otevře se prázdný projekt s kočkou. Přihlašovat se nemusíš.`)}
    ${LI(3,`Je Scratch anglicky? Nahoře klikni na <b>zeměkouli</b> nebo na <b>Settings → Language</b> a vyber <b>Čeština</b>.`)}
-   ${LI(4,`Tuhle stránku (průvodce) nech otevřenou ve vedlejším panelu. Budeš se sem vracet.`)}</div>`},
+   ${LI(4,`Tuhle stránku (průvodce) nech otevřenou ve vedlejší kartě. Budeš se sem vracet.`)}</div>`},
   {html:()=>`<div class="min">Scratch · asi 2 minuty</div><h1>Co je kde</h1>${editorSVG()}
    <div class="card">${LI(1,`<b>Kategorie</b> – barevná kolečka. Klikneš a ukážou se bloky té barvy.`)}
    ${LI(2,`<b>Bloky</b> – chytni blok myší a <b>přetáhni</b> ho doprostřed.`)}
-   ${LI(3,`<b>Plocha pro skript</b> – tady skládáš. Pustíš-li blok těsně pod jiný, <b>cvakne</b> se k němu. Blok smažeš tak, že ho přetáhneš zpátky doleva.`)}
+   ${LI(3,`<b>Plocha pro skript</b> – tady skládáš. Pustíš-li blok těsně pod jiný, <b>cvakne</b> se k němu. Blok smažeš tak, že ho přetáhneš zpátky doleva. <b>Pozor:</b> když táhneš blok, jdou s ním i všechny bloky pod ním. Chceš přesunout jen jeden? Spodní bloky nejdřív odtáhni stranou a pak je zase připoj.`)}
    ${LI(4,`<b>Scéna</b> – tady se kočka hýbe.`)}
    ${LI(5,`<b>Zelená vlajka</b> spustí program, <b>červené tlačítko</b> ho zastaví.`)}
    ${LI(6,`<b>Rozšíření</b> (modré tlačítko s plusem úplně vlevo dole) – tady je <b>Pero</b> na kreslení. Dnes ho nepotřebuješ.`)}
@@ -435,7 +441,7 @@ const U=[
      "Klikni na fialové kolečko Vzhled a přetáhni {vzhled:bublina Ahoj! 2 sekund}. Pusť ji těsně pod žlutý blok – cvakne k němu.",
      "Klikni na modré kolečko Pohyb a přidej pod bublinu {pohyb:dopředu o 10 kroků}. Do okénka napiš místo 10 číslo 100.",
      "Klikni na zelenou vlajku nad scénou."],
-   ok:"Kočka řekne Ahoj! a popojde doprava.", bonus:"Přidej druhou bublinu „Jdu dál.“ a ještě jeden krok dopředu.",
+   ok:"Kočka řekne Ahoj! a popojde doprava.", bonus:"Přidej druhou bublinu „Jdu dál.“ a pod ni ještě jeden blok dopředu o 100 kroků.",
    tip:"Blok chytíš myší a táhneš. Když ho pustíš těsně pod jiný blok, cvakne se k němu. Spletl(a) ses? Přetáhni blok zpátky doleva a zmizí. Číslo v bílém okénku přepíšeš: klikni do něj a napiš nové.",
    res:[[0,"udalosti","po kliknutí na ⚑"],[0,"vzhled","bublina Ahoj! 2 sekund"],[0,"pohyb","dopředu o 100 kroků"]]},
   {n:"Kočka se představí",hv:2,kat:["udalosti","pohyb","vzhled","ovladani"], z:"Tohle je spojovačka 2 z ukázek.",
@@ -494,8 +500,8 @@ function Task(i){ const u=U[i], n=i+1;
   return { html:`<div class="min">ve Scratchi · úloha ${n} z ${U.length}</div>${u.z?`<p class="help" style="margin:0 0 8px">${u.z}</p>`:""}
     <div class="card"><div class="uh"><h1 style="margin:0">Úloha ${n} · ${u.n}</h1>${hv}</div><div style="margin:6px 0">${kat}</div>
     <p><b>Zadání:</b> ${u.zad}</p>${u.diag?`<div class="wrap">${kroky}<div>${diagram(u.diag)}</div></div>`:kroky}
-    <p class="ok"><b>Hotovo, když:</b> ${u.ok}</p><p class="bonus"><b>Bonus:</b> ${md(u.bonus)}</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;bottom:58px;background:#fff;padding:6px 0;z-index:3"><button class="btn ghost" id="bt">💡 Nevím, kde co je</button><button class="btn ghost" id="bs">Ukázat hotový skript</button>
+    <p class="ok"><b>Hotovo, když:</b> ${u.ok} Funguje? Dole zaškrtni <b>☑ Úloha ${n} funguje</b> a klikni na Další.</p><p class="bonus"><b>Bonus:</b> ${md(u.bonus)}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;bottom:58px;background:#fff;padding:6px 0;z-index:3"><button class="btn ghost" id="bt">💡 Nápověda</button><button class="btn ghost" id="bs">Ukázat hotový skript</button>
     <div class="donebox" style="margin:0 0 0 12px;padding:0;border:0"><label><input type="checkbox" id="cd"> Úloha ${n} funguje</label><label><input type="checkbox" id="cb"> Bonus taky</label></div></div>
     <div class="tip" id="tip">${u.tip}</div><div class="sol" id="sol"><b>Hotový skript</b> (odsazené bloky patří dovnitř opakování nebo podmínky):${res}</div></div>`,
     mount(){ $("#bt").onclick=()=>{ const t=$("#tip"); t.style.display=t.style.display==="block"?"none":"block"; if(t.style.display==="block") t.scrollIntoView({block:"nearest"}); };
@@ -510,23 +516,26 @@ function Task(i){ const u=U[i], n=i+1;
 /* ---------- úvod a konec ---------- */
 /* CAST: "ukazky" = index.html (část 1 spojovačky + dokud, odevzdání 1, návod na část 2), "ulohy" = ulohy.html (část 3 Scratch + odevzdání) */
 const CAST="ukazky";
+document.title = CAST==="ukazky" ? "Scratch 1 – Ukázky · 8. ročník" : "Scratch 3 – Úlohy · 8. ročník";
+const nulaBtn=`<p style="margin-top:18px"><button class="btn ghost" id="nula" style="font-size:14px;padding:6px 12px">Sedím u cizího počítače – začít od nuly</button></p>`;
+function mountNula(){ const x=$("#nula"); if(x) x.onclick=()=>{ try{ localStorage.removeItem(KEY); localStorage.removeItem(JM); }catch(e){} location.reload(); }; }
 const IntroUkazky={ html:`<h1>Scratch – ukázky</h1><p class="lead">Dnes se naučíš skládat program z bloků a opakování <b>dokud</b>. Postupuj krok za krokem tlačítkem <b>Další</b> dole vpravo.</p>
   <div class="card">${LI("A","<b>Spojovačky</b> (5 minut) – poskládáš bloky tady na stránce a uvidíš, co kočka udělá. První je úplně jednoduchá.")}
   ${LI("B","<b>Opakuj dokud</b> (7 minut) – vysvětlení, ukázka a jeden příklad na skládání.")}
   ${LI("✔","<b>Odevzdání části 1</b> – na konci si stáhneš potvrzení se svým příjmením a odevzdáš ho v Google učebně do úkolu <b>1 Ukázky</b>.")}</div>
   <p class="help">Když nevíš, klikni na tlačítko 💡 Nápověda. Nápovědy se odkrývají postupně, jedna po druhé.</p>
-  <div class="card" style="border-left:6px solid #C8102E"><b>Ve 25. minutě hodiny jdeš na Scratch, ať jsi kdekoli.</b> Nemáš hotovo? Tlačítkem Další dojdi na <b>Odevzdání 1</b>, stáhni potvrzení, odevzdej ho a otevři v Google učebně úkol <b>3 Scratch</b>.</div>`, mount(){} };
+  <div class="card" style="border-left:6px solid #C8102E"><b>Ve 25. minutě hodiny jdeš na Scratch, ať jsi kdekoli.</b> Nemáš hotovo? Tlačítkem Další dojdi na <b>Odevzdání 1</b>, stáhni potvrzení, odevzdej ho a otevři v Google učebně úkol <b>3 Scratch</b>.</div>${nulaBtn}`, mount(){ mountNula(); } };
 /* jméno žáka zůstává jen v jeho prohlížeči (localStorage), nikam se neposílá */
 const JM="scratch8d-jmeno";
 function getJm(){ try{ return localStorage.getItem(JM)||window._jm||""; }catch(e){ return window._jm||""; } }
 function setJm(v){ window._jm=v; try{ localStorage.setItem(JM,v); }catch(e){} }
 function bezDiakritiky(v){ return v.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9-]/g,""); }
 function fname(n){ const j=bezDiakritiky(getJm()); return (j?j.charAt(0).toUpperCase()+j.slice(1):"Prijmeni")+"_"+n; }
-const nameBox=()=>`<div style="margin:6px 0 12px 38px"><label style="font-weight:700">Příjmení: <input id="jm" value="${esc(getJm())}" placeholder="např. Novák"
+const nameBox=()=>`<div style="margin:6px 0 12px 38px"><label style="font-weight:700">Příjmení (jen příjmení): <input id="jm" value="${esc(getJm())}" placeholder="např. Novák"
   style="font:inherit;padding:6px 10px;border:2px solid #1A2D5C;border-radius:8px;width:220px"></label></div>`;
 function refreshFn(){ document.querySelectorAll(".fn").forEach(e=>{ e.textContent=fname(e.dataset.n)+(e.dataset.ext||""); }); }
 const fn=(n,ext)=>`<b class="fn" data-n="${n}" data-ext="${ext||""}">${fname(n)}${ext||""}</b>`;
-function mountName(after){ const i=$("#jm"); if(!i) return; i.oninput=()=>{ setJm(i.value.trim()); refreshFn(); after&&after(); }; }
+function mountName(after){ const i=$("#jm"); if(!i) return; i.oninput=()=>{ setJm(i.value.trim()); refreshFn(); const m=$("#dlmsg"); if(m) m.textContent=""; after&&after(); }; }
 
 const PUZ_LIST=[["s0","Spojovačka 1 · Kočka řekne Ahoj"],["a1","Spojovačka 2 · Kočka se představí"],["a2","Spojovačka 3 · Čtverec perem"],["a3","Příklad · Kočka ke kraji (dokud)"]];
 function drawCert(c){ const g=c.getContext("2d"); g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height);
@@ -545,35 +554,36 @@ const Odevzdej1={ get html(){ return `<div class="min">odevzdání části 1 · 
   <canvas id="cert" width="900" height="420" style="max-width:600px"></canvas>`; },
   mount(){ const c=$("#cert"); drawCert(c); mountName(()=>drawCert(c));
     $("#dl").onclick=()=>{ if(!getJm()){ $("#dlmsg").textContent="Nejdřív napiš příjmení."; $("#jm").focus(); return; }
-      drawCert(c); c.toBlob(bl=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(bl); a.download=fname(1)+".png"; document.body.appendChild(a); a.click(); a.remove();
+      $("#dlmsg").textContent="Ukládám…"; drawCert(c); c.toBlob(bl=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(bl); a.download=fname(1)+".png"; document.body.appendChild(a); a.click(); a.remove();
         $("#dlmsg").textContent="Staženo: "+fname(1)+".png"; $("#next").classList.add("pulse"); },"image/png"); }; } };
 const Umime2={ get html(){ return `<div class="min">část 2 · Umíme to · asi 9 minut</div><h1>Část 2: Umíme to</h1>
   <p class="lead">V Google učebně otevři úkol <b>2 Umíme to</b> a v něm odkaz na nástěnku. Udělej obě cvičení: <b>Opakuj dokud</b> a <b>Vláček: opakuj dokud</b>.<br><b>Ve 25. minutě hodiny skonči, ať jsi kdekoli:</b> udělej snímek toho, co máš, odevzdej ho a jdi na úkol <b>3 Scratch</b>.</p>
   <div class="card" style="border-left:6px solid #C8102E"><b>Pozor: Umíme to píše „dokud“ obráceně než Scratch.</b>
    <table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:17px">
    <tr style="text-align:left;border-bottom:2px solid #ccc"><th style="padding:4px">Umíme to</th><th style="padding:4px">Scratch</th></tr>
-   <tr><td style="padding:6px 4px"><b>dokud ≤ 3</b> · přičti 3</td><td style="padding:6px 4px">${b("ovladani","opakuj dokud nenastane ⟨…⟩")}</td></tr>
+   <tr><td style="padding:6px 4px"><b>dokud ≤ 3</b> · přičti 3</td><td style="padding:6px 4px">${b("ovladani","opakuj dokud nenastane ⟨číslo > 3⟩")} · přičti 3</td></tr>
    <tr><td style="padding:6px 4px">Opakuje, dokud podmínka <b>platí</b>.<br>Skončí, když <b>přestane</b> platit.</td>
        <td style="padding:6px 4px">Opakuje, dokud podmínka <b>neplatí</b>.<br>Skončí, když <b>začne</b> platit.</td></tr>
    <tr><td style="padding:6px 4px">dokud baterie &lt; 100 → nabíjej</td><td style="padding:6px 4px">opakuj dokud nenastane baterie = 100 → nabíjej</td></tr>
-   </table><p style="margin:8px 0 0">Poslední řádek dělá v obou případech totéž: nabíjí, dokud není plno.</p></div>
+   </table><p style="margin:8px 0 0">Ve Scratchi napíšeš <b>opačnou podmínku</b>: místo ≤ 3 dáš > 3. Poslední řádek tak dělá v obou případech totéž: nabíjí, dokud není plno.</p></div>
   <div class="card"><b>Jak odevzdat část 2</b>
-  ${LI(1,"Až dokončíš obě cvičení, stiskni naráz <b>Windows + Shift + S</b> a myší označ obrazovku s výsledkem.")}
-  ${LI(2,"Vpravo dole klikni na oznámení. Otevře se okno <b>Výstřižky</b>.")}
-  ${LI(3,`Stiskni <b>Ctrl + S</b>, jako název napiš ${fn(2)} a klikni na <b>Uložit</b>. Zapamatuj si složku (obvykle <b>Obrázky</b>).`)}
-  ${LI(4,`V Google učebně v úkolu <b>2 Umíme to</b>: <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(2,".png")} → <b>Odevzdat</b>.`)}
+  ${LI(1,"Na konci <b>každého</b> cvičení, když vidíš výsledek, stiskni naráz <b>Windows + Shift + S</b> a myší označ výsledek.")}
+  ${LI(2,"Hned vpravo dole klikni na oznámení. Otevře se okno <b>Výstřižky</b>.")}
+  ${LI(3,`Stiskni <b>Ctrl + S</b>, jako název napiš ${fn("2a")} (po druhém cvičení ${fn("2b")}) a klikni na <b>Uložit</b>. Zapamatuj si složku (obvykle <b>Obrázky</b>).`)}
+  ${LI("?",`Oznámení zmizelo? Stiskni <b>Windows + PrtScn</b>. Celá obrazovka se uloží do <b>Obrázky → Snímky obrazovky</b>. Ten soubor přejmenuj (klikni na něj, <b>F2</b>) na ${fn("2a")} nebo ${fn("2b")}.`)}
+  ${LI(4,`V Google učebně v úkolu <b>2 Umíme to</b>: <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn("2a",".png")} a ${fn("2b",".png")} → <b>Odevzdat</b>.`)}
   ${LI(5,"Pak otevři úkol <b>3 Scratch</b>. Tam pokračuješ.")}</div>`; }, mount(){} };
 const IntroUlohy={ html:`<div class="min">část 3</div><h1>Scratch – první programy</h1><p class="lead">Ukázky (část 1) a Umíme to (část 2) máš odevzdané. Teď poskládáš stejné programy ve skutečném Scratchi. Postupuj tlačítkem <b>Další</b>.<br>Sem jdeš nejpozději ve 25. minutě hodiny, i když části 1 a 2 nemáš celé.</p>
   <div class="card">${LI("A","<b>Jak na Scratch</b> (3 minuty) – kde co ve Scratchi najdeš.")}
   ${LI("B","<b>Úlohy</b> – stejné programy jako v ukázkách: Ahoj, představení, ke kraji. Začni od jedničky. Kolik stihneš, tolik stačí.")}
   ${LI("C","<b>Odevzdání</b> (4 minuty před koncem) – uložíš projekt a odevzdáš ho v Google učebně do úkolu <b>3 Scratch</b>.")}</div>
-  <p class="help">Když se zasekneš, u každé úlohy je tlačítko 💡 s nápovědou. Teprve když to opravdu nejde, podívej se na hotový skript.</p>`, mount(){} };
+  <p class="help">Když se zasekneš, u každé úlohy je tlačítko 💡 s nápovědou. Teprve když to opravdu nejde, podívej se na hotový skript.</p>${nulaBtn}`, mount(){ mountNula(); } };
 const End={ get html(){ const all=U.map((_,i)=>i+1), d=all.filter(n=>S.done[n]), bo=all.filter(n=>S.bonus[n]);
   const sum=d.length?`Hotové úlohy: ${d.join(", ")}${bo.length?" · bonus: "+bo.join(", "):""}`:"Zatím žádná úloha označená jako hotová.";
   return `<div class="min">4 minuty před koncem hodiny</div><h1>Ulož a odevzdej část 3</h1>
   <div class="card">${LI(1,"Napiš své příjmení (stejně jako u části 1):")}${nameBox()}
-  ${LI(2,"Ve Scratchi nahoře klikni na <b>Soubor → Uložit do svého počítače</b>.")}
-  ${LI(3,`Objeví se okno s názvem? Napiš ${fn(3)} a klikni na <b>Uložit</b>.<br>Stáhl se soubor sám jako <i>Projekt Scratch.sb3</i>? V Chrome stiskni <b>Ctrl + J</b> → <b>Zobrazit ve složce</b>, soubor označ, stiskni <b>F2</b> a přepiš název na ${fn(3)}.`)}
+  ${LI(2,"Ve Scratchi nahoře klikni na <b>Soubor → Ulož do svého počítače</b>.")}
+  ${LI(3,`Objeví se okno s názvem? Napiš ${fn(3)} a klikni na <b>Uložit</b>.<br>Stáhl se soubor sám (třeba jako <i>Můj projekt.sb3</i>)? V Chrome stiskni <b>Ctrl + J</b> → <b>Zobrazit ve složce</b>, soubor označ, stiskni <b>F2</b> a přepiš název na ${fn(3)}.`)}
   ${LI(4,`V Google učebně otevři úkol <b>3 Scratch</b> → <b>Přidat nebo vytvořit → Soubor</b> → vyber ${fn(3,".sb3")}.`)}
   ${LI(5,"Do <b>soukromého komentáře</b> opiš, kam jsi došel (došla):")}
   <div style="margin:4px 0 10px 38px"><span class="summary">${sum}</span></div>
