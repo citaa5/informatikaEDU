@@ -15,10 +15,10 @@ header .t{font-weight:700;font-size:19px}
 .steps span{font-size:14px;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.15)}
 .steps span.on{background:#FFBF00;color:#1d1d1f;font-weight:700}
 .steps span.ok{background:#4caf50}
-main{max-width:1060px;margin:0 auto;padding:18px 20px 110px}
-h1{color:var(--navy);font-size:30px;margin:4px 0 6px}
+main{max-width:1180px;margin:0 auto;padding:12px 20px 100px}
+h1{color:var(--navy);font-size:27px;margin:2px 0 4px}
 h2{color:var(--navy);font-size:22px;margin:16px 0 6px}
-.lead{font-size:20px;color:#333;margin:0 0 12px}
+.lead{font-size:19px;color:#333;margin:0 0 10px}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:0 0 14px}
 .min{display:inline-block;background:#eef1f8;color:var(--navy);font-size:14px;font-weight:700;border-radius:10px;padding:2px 10px;margin-bottom:6px}
 nav.bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:5}
@@ -32,32 +32,38 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:0;padding:10px 18px
 .pulse{animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 8px rgba(46,158,68,.25)}}
 /* bloky */
-.blk{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;min-height:34px;border-radius:7px;font-weight:600;font-size:16px;border:1px solid rgba(0,0,0,.18);white-space:nowrap;user-select:none}
+.blk{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;min-height:30px;border-radius:7px;font-weight:600;font-size:15px;border:1px solid rgba(0,0,0,.18);white-space:nowrap;user-select:none}
 .blk.hat{border-radius:22px 22px 7px 7px;padding-top:10px}
 .inp{background:#fff;color:#333;border-radius:11px;padding:0 8px;font-weight:600;min-width:22px;text-align:center}
 .chip{display:inline-block;border-radius:6px;padding:0 7px;font-size:16px;font-weight:600;line-height:1.55;white-space:nowrap}
 /* skládačka */
-.puzzle{display:grid;grid-template-columns:300px 1fr 400px;gap:14px;align-items:start}
+.puzzle{display:grid;grid-template-columns:260px 1fr 370px;gap:12px;align-items:start}
 @media (max-width:1000px){.puzzle{grid-template-columns:1fr 1fr}.puzzle .stagebox{grid-column:1/3}}
-.pal,.ws{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-height:300px}
-.pal h3,.ws h3{margin:0 0 8px;font-size:15px;color:#555;font-weight:600}
-.pal .blk{display:flex;width:max-content;margin:0 0 8px;cursor:pointer}
+.pal,.ws{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-height:150px}
+.ws{min-height:300px}
+.pal h3,.ws h3{margin:0 0 6px;font-size:14px;color:#555;font-weight:600}
+.cnt{display:inline-block;background:#1A2D5C;color:#fff;border-radius:10px;padding:0 8px;margin-left:4px}
+.cnt.full{background:#2e9e44}
+.pal .blk{display:flex;width:max-content;margin:0 0 6px;cursor:pointer}
 .pal .blk:hover{filter:brightness(1.08);transform:translateX(3px)}
 .pal .gone{visibility:hidden;height:0;margin:0;padding:0;min-height:0;border:0}
 .ws{background:#f9fafc;background-image:radial-gradient(#dfe3ea 1px,transparent 1px);background-size:18px 18px}
 .ws .blk{cursor:pointer}
 .ws .blk:hover{outline:2px solid #c62828}
-.slot{height:12px;width:220px;margin:2px 0;border-radius:4px;cursor:pointer;border:1px dashed #cfd5e0}
+.slot{height:9px;width:220px;margin:1px 0;border-radius:4px;cursor:pointer;border:1px dashed #cfd5e0}
 .slot:hover{background:#cfd8ea}
-.slot.on{height:30px;border:2px dashed #2e9e44;background:#eaf7ec;color:#2e7d32;font-size:14px;font-weight:700;display:flex;align-items:center;padding-left:8px;width:220px}
+.slot.on{height:26px;border:2px dashed #2e9e44;background:#eaf7ec;color:#2e7d32;font-size:14px;font-weight:700;display:flex;align-items:center;padding-left:8px;width:220px}
 .cb{display:inline-block}
 .cb .ctop{border-radius:7px 7px 0 0}
 .cb .cin{border-left:18px solid;margin-left:0;padding:3px 0 3px 6px;min-height:30px}
 .cb .cbot{height:16px;width:150px;border-radius:0 0 7px 7px;border:1px solid rgba(0,0,0,.18);border-top:0}
 .stagebox{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
-.stagebar{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.stagebar{display:flex;gap:5px;margin-bottom:6px;align-items:center}
+.stagebar .btn{padding:6px 8px;font-size:14px;white-space:nowrap}
+.cil{background:#fff;border:1px solid var(--line);border-left:6px solid #FFBF00;border-radius:10px;padding:8px 14px;margin:0 0 10px;font-size:17px;line-height:1.6}
+.cil span{white-space:nowrap}
 canvas{width:100%;border:1px solid #c9ced8;border-radius:6px;background:#fff;display:block}
-.msg{margin-top:10px;padding:10px 14px;border-radius:10px;font-weight:600;display:none}
+.msg{margin-top:10px;padding:7px 12px;border-radius:10px;font-weight:600;font-size:15px;display:none}
 .msg.bad{display:block;background:#fdecea;color:#b71c1c}
 .msg.good{display:block;background:#e8f5e9;color:#1b5e20}
 .msg.info{display:block;background:#eef1f8;color:var(--navy)}
@@ -171,7 +177,8 @@ class Stage{
 /* ---------- skládačky ---------- */
 const PUZ = {
   s0: { title:"Kočka řekne Ahoj", min:"spojovačka 1 · rozcvička · asi 2 minuty",
-    zad:"Poskládej program: po kliknutí na zelenou vlajku kočka řekne „Ahoj!“ a pak popojde dopředu.",
+    zad:"Poskládej program podle kroků. Použij všechny bloky vlevo.",
+    cil:["po kliknutí na vlajku","kočka řekne „Ahoj!“","popojde dopředu (100 kroků)"], sol:["h","s","m"],
     how:true,
     hints:["Program vždycky začíná žlutým blokem s vlajkou. Ten dej první.","Kočka nejdřív mluví a teprve potom jde. Bublina je tedy druhá.","Pořadí: po kliknutí na ⚑ → bublina Ahoj! → dopředu o 100 kroků."],
     init:{x:-120,y:0,dir:90},
@@ -184,10 +191,12 @@ const PUZ = {
       if(ids.join()!=="h,s,m") return "Kočka má nejdřív pozdravit a pak jít. Prohoď bublinu a „dopředu“.";
       return true; } },
   a1: { title:"Kočka se představí", min:"spojovačka 2 · asi 3 minuty",
-    zad:"Kočka skočí na start vlevo, řekne „Ahoj!“, přejde doprava, chvilku počká a couvne zpátky na start.",
+    zad:"Poskládej program podle kroků. Použij všechny bloky vlevo.",
+    cil:["po kliknutí na vlajku","skočí na start vlevo (x: -150, y: 0)","otočí se doprava (směr 90)","řekne „Ahoj!“","přejde doprava (150 kroků)","chvilku počká (1 sekundu)","couvne zpátky na start (-150 kroků)"],
+    sol:["h","g","d","s","m1","w","m2"],
     hints:["Nahoře je žlutý blok po kliknutí na ⚑.","Pak kočku postav na start: skoč na x: -150 y: 0 a nastav směr 90 (= kouká doprava). Proto začne vždycky vlevo, ať stojí kdekoli.",
       "Potom bublina Ahoj!, dopředu o 150 kroků a čekej 1 sekund.","Úplně dole je dopředu o -150 kroků. Mínus znamená couvni zpátky."],
-    init:{x:60,y:-90,dir:0},
+    init:{x:60,y:-90,dir:90},
     blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, g:{kat:"pohyb",t:"skoč na x: [-150] y: [0]",op:"goto",a:[-150,0]},
       d:{kat:"pohyb",t:"nastav směr [90]",op:"dir",a:[90]}, s:{kat:"vzhled",t:"bublina [Ahoj!] [2] sekund",op:"say",a:["Ahoj!",2]},
       m1:{kat:"pohyb",t:"dopředu o [150] kroků",op:"move",a:[150]}, w:{kat:"ovladani",t:"čekej [1] sekund",op:"wait",a:[1]},
@@ -200,7 +209,9 @@ const PUZ = {
       let best=0; for(const x of v){ let i=0; while(i<7&&x[i]===ids[i]) i++; best=Math.max(best,i); }
       return `${best===1?"Blok č. 1 je":`Bloky č. 1 až ${best} jsou`} dobře, blok č. ${best+1} sem nepatří. Spusť vlajku a sleduj, kdy kočka udělá něco jinak než v zadání.`; } },
   a2: { title:"Čtverec perem", min:"spojovačka 3 · asi 3 minuty",
-    zad:"Kočka nejdřív smaže starou čmáranici a pak nakreslí čtverec.<br><small>Opakování obejme bloky, které do něj přidáš. Až budeš chtít pokračovat <b>pod</b> opakováním, klikni na čárkovaný řádek pod oranžovou čelistí.</small>",
+    zad:"Poskládej program podle kroků. Použij všechny bloky vlevo.<br><small>Opakování obejme bloky, které do něj přidáš. Až budeš chtít pokračovat <b>pod</b> opakováním, klikni na čárkovaný řádek pod oranžovou čelistí.</small>",
+    cil:["po kliknutí na vlajku","smaže starou čmáranici","skočí doprostřed (x: 0, y: 0)","otočí se doprava (směr 90)","zapne pero","4× zopakuje: dopředu 100 kroků a otočit o 90°","vypne pero"],
+    sol:["h","c","g","d","pd",["r",["f","t"]],"pu"],
     hints:["Začátek: po kliknutí na ⚑, smaž, skoč na x: 0 y: 0, nastav směr 90.","Pak pero zapni – od té chvíle kočka za sebou kreslí čáru.",
       "Opakuj 4 krát a do něj dopředu o 100 kroků a otoč se o 90 stupňů. Čtverec má 4 strany a 4 rohy.","Pod opakování (klikni na čárkovaný řádek pod oranžovou čelistí) dej pero vypni."],
     init:{x:-140,y:70,dir:90,lines:[[-210,-120,-60,-150],[-60,-150,-20,-100]]},
@@ -223,10 +234,12 @@ const PUZ = {
       if(top.indexOf("c")>iPd) return "„Smaž“ dej před „pero zapni“ – jinak smažeš i kus nového čtverce.";
       return true; } },
   a3: { title:"Příklad: kočka ke kraji", min:"opakuj dokud · příklad · asi 4 minuty",
-    zad:"Kočka jde doprava tak dlouho, dokud nenarazí na okraj scény. Pak řekne „Jsem na kraji!“. Nevíme, kolik kroků to bude – proto ne „opakuj 10 krát“, ale <b>opakuj dokud nenastane</b>.",
+    zad:"Nevíme, kolik kroků bude ke kraji – proto ne „opakuj 10 krát“, ale <b>opakuj dokud nenastane</b>. Poskládej program podle kroků, použij všechny bloky.",
+    cil:["po kliknutí na vlajku","skočí na start vlevo (x: -180, y: 0)","otočí se doprava (směr 90)","opakuje krok o 10 kroků, dokud se nedotkne okraje","řekne „Jsem na kraji!“"],
+    sol:["h","g","d",["u",["f"]],"s"],
     hints:["Nahoře po kliknutí na ⚑, pak skoč na x: -180 y: 0 a nastav směr 90.","Pak opakuj dokud nenastane ⟨dotýkáš se okraje?⟩.",
       "Do opakování dej jen dopředu o 10 kroků. Kočka jde po malých krocích a po každém se zeptá: už jsem u okraje?","Pod opakování dej bublinu Jsem na kraji!"],
-    init:{x:100,y:-100,dir:0},
+    init:{x:100,y:-100,dir:90},
     blocks:{ h:{kat:"udalosti",t:"po kliknutí na ⚑",op:"hat"}, g:{kat:"pohyb",t:"skoč na x: [-180] y: [0]",op:"goto",a:[-180,0]},
       d:{kat:"pohyb",t:"nastav směr [90]",op:"dir",a:[90]}, u:{kat:"ovladani",t:"opakuj dokud nenastane ⟨dotýkáš se okraje?⟩",op:"until",c:true},
       f:{kat:"pohyb",t:"dopředu o [10] kroků",op:"move",a:[10]}, s:{kat:"vzhled",t:"bublina [Jsem na kraji!] [2] sekund",op:"say",a:["Jsem na kraji!",2]} },
@@ -248,8 +261,9 @@ function Puzzle(key){
   function render(){
     const pal=P.order.map(id=>{ const b=P.blocks[id];
       return used.has(id)?`<div class="blk gone"></div>`:blkHTML(b,`data-pal="${id}" title="Klikni – blok se přidá na místo ▶"`); }).join("");
-    $("#pal").innerHTML=`<h3>Bloky – klikni a přidá se na zelené místo</h3>${pal||'<p class="help">Všechny bloky jsou ve skriptu.</p>'}`;
-    $("#ws").innerHTML=`<h3>Skript – klikni na blok a vrátí se zpátky · klikni mezi bloky a změníš zelené místo</h3>`+list([],tree);
+    const total=Object.keys(P.blocks).length, n=used.size;
+    $("#pal").innerHTML=`<h3>Bloky – použij všech ${total}. Klikni a blok se přidá na zelené místo.</h3>${pal||'<p class="help">Všechny bloky jsou ve skriptu. Klikni na Zkontrolovat.</p>'}`;
+    $("#ws").innerHTML=`<h3>Skript <span class="cnt${n===total?" full":""}">${n} z ${total} bloků</span><br>klikni na blok = vrátí se zpátky · klikni na čárkovaný řádek = změníš zelené místo</h3>`+list([],tree);
   }
   function slot(path,i){ const on=act.path.join()===path.join()&&act.i===i;
     return `<div class="slot${on?" on":""}" data-slot="${path.join(".")}|${i}">${on?"▶ sem přijde další blok":""}</div>`; }
@@ -275,24 +289,28 @@ function Puzzle(key){
     stage.stopFlag=false; $("#run").disabled=true; await stage.exec(toBlocks(tree)); stage.stopFlag=true; $("#run").disabled=false;
     if(stage.warn) msg("bad","Opakování se točí pořád dokola a nikdy neskončí: kočka se uvnitř opakování nehýbe, takže k okraji nikdy nedojde.");
   }
+  function solTree(spec){ return spec.map(x=>Array.isArray(x)?Object.assign({},P.blocks[x[0]],{kids:solTree(x[1])}):Object.assign({},P.blocks[x])); }
+  async function goal(){ stage.stopFlag=true; await stage.sleep(60); stage.reset(); msg("info","👀 Cíl: takhle to má vypadat. Dívej se na kočku – a pak to poskládej sám (sama)."); stage.stopFlag=false;
+    $("#goal").disabled=true; await stage.exec(solTree(P.sol)); stage.stopFlag=true; $("#goal").disabled=false; await stage.sleep(900); stage.reset(); }
   function check(){ const r=P.check(tree);
     if(r===true){ S.solved[key]=true; save(); msg("good","Správně! Klikni na zelenou vlajku a podívej se, jak to kočka udělá. Pak pokračuj tlačítkem Další."); $("#next").classList.add("pulse"); run(); }
     else msg("bad",r); }
   const how=P.how?`<div class="card" style="border-left:6px solid #2e9e44;padding:10px 16px"><b>Jak na to:</b> ① klikni na blok vlevo – přesune se doprostřed do skriptu · ② spletl(a) ses? klikni na blok ve skriptu a vrátí se · ③ klikni na <b>⚑ Spustit</b>, dívej se na kočku a pak klikni na <b>Zkontrolovat</b>.</div>`:"";
-  const hints=P.hints?`<div style="margin:0 0 12px"><button class="btn ghost" id="hb">💡 Nápověda</button><ol id="hl" style="margin:8px 0 0 22px;padding:0"></ol></div>`:"";
-  return { html:`<div class="min">${P.min||"spojovačka · asi 3 minuty"}</div><h1>${P.title}</h1><p class="lead">${P.zad}</p>${how}${hints}
-      <div class="puzzle"><div class="pal" id="pal"></div><div class="ws" id="ws"></div>
-      <div class="stagebox"><div class="stagebar"><button class="btn flag" id="run">⚑ Spustit</button><button class="btn ghost" id="stop">⏹</button>
-      <button class="btn green" id="chk">Zkontrolovat</button><button class="btn ghost" id="rst" title="Začít znovu">↺</button></div>
-      <canvas id="cv" width="480" height="360"></canvas><div class="msg" id="msg"></div>
-      <p class="help">Šedé čáry se kříží uprostřed scény, v bodě x: 0, y: 0.</p></div></div>`,
+  const hints=P.hints?`<div style="margin:10px 0 0"><button class="btn ghost" id="hb" style="padding:6px 14px;width:100%">💡 Nápověda</button><ol id="hl" style="margin:6px 0 0 20px;padding:0;font-size:15px"></ol></div>`:"";
+  const cil=P.cil?`<div class="cil"><b>Co má kočka udělat:</b> ${P.cil.map((t,i)=>`<span>${"①②③④⑤⑥⑦⑧⑨"[i]} ${t}</span>`).join(" → ")}</div>`:"";
+  return { html:`<div class="min">${P.min||"spojovačka · asi 3 minuty"}</div><h1>${P.title}</h1><p class="lead">${P.zad}</p>${cil}${how}
+      <div class="puzzle"><div><div class="pal" id="pal"></div>${hints}</div><div class="ws" id="ws"></div>
+      <div class="stagebox"><div class="stagebar"><button class="btn ghost" id="goal" title="Kočka předvede, co má program dělat">👀 Cíl</button><button class="btn flag" id="run">⚑ Spustit</button><button class="btn ghost" id="stop" title="Zastavit">⏹</button>
+      <button class="btn green" id="chk">✔ Zkontrolovat</button><button class="btn ghost" id="rst" title="Začít znovu">↺</button></div>
+      <div class="msg" id="msg" style="margin:0 0 6px"></div><canvas id="cv" width="480" height="360"></canvas>
+      </div></div>`,
     mount(){ stage=new Stage($("#cv"),P.init); render();
       if(P.hints){ let hi=0; $("#hb").onclick=()=>{ if(hi>=P.hints.length) return; const li=document.createElement("li"); li.style.margin="4px 0"; li.innerHTML=label(P.hints[hi]); $("#hl").appendChild(li); hi++;
         $("#hb").textContent = hi<P.hints.length ? `💡 Další nápověda (${hi}/${P.hints.length})` : "💡 Víc nápověd není"; $("#hb").disabled = hi>=P.hints.length; }; }
       $("#pal").onclick=e=>{ const t=e.target.closest("[data-pal]"); if(t) add(t.dataset.pal); };
       $("#ws").onclick=e=>{ const b=e.target.closest("[data-ws]"); if(b){ remove(b.dataset.ws); return; }
         const s=e.target.closest("[data-slot]"); if(s){ const [p,i]=s.dataset.slot.split("|"); act={path:p?p.split(".").map(Number):[],i:+i}; render(); } };
-      $("#run").onclick=run; $("#stop").onclick=()=>{stage.stopFlag=true; $("#run").disabled=false;};
+      $("#goal").onclick=goal; $("#run").onclick=run; $("#stop").onclick=()=>{stage.stopFlag=true; $("#run").disabled=false;};
       $("#chk").onclick=check; $("#rst").onclick=()=>{ stage.stopFlag=true; tree=[]; used.clear(); act={path:[],i:0}; stage.reset(); msg(); render(); };
       if(S.solved[key]) msg("info","Tuhle skládačku už máš vyřešenou. Můžeš ji zkusit znovu, nebo jít dál."); },
     unmount(){ if(stage) stage.stopFlag=true; } };
